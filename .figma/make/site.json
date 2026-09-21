@@ -1,0 +1,10 @@
+{
+  "description": "Offers a customizable design interface with red-themed color palettes to create visually appealing, cohesive digital projects effortlessly.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
