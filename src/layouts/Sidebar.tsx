@@ -1,24 +1,34 @@
+/**
+ * Sidebar — main navigation panel.
+ *
+ * Active route detection: useLocation().pathname matched against
+ * each nav item path.
+ * Navigation: useNavigate() — replaces the old onNavigate prop.
+ * Admin name/initials: useAuth() — replaces the old adminName prop.
+ */
+import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { tokens } from "../styles/tokens";
 import { Ico } from "../utils/icons";
-import type { Page } from "../App";
+import { useAuth } from "../contexts/AuthContext";
 
 const { color } = tokens;
 
-const NAV_ITEMS: { page: Page; label: string; icon: (c?: string) => JSX.Element }[] = [
-  { page: "dashboard", label: "Dashboard",      icon: Ico.monitor },
-  { page: "transaksi", label: "Data Transaksi", icon: Ico.folder  },
-  { page: "kwitansi",  label: "Print Kwitansi", icon: Ico.receipt },
-  { page: "nota",      label: "Nota",           icon: Ico.note    },
+const NAV_ITEMS: { path: string; label: string; icon: (c?: string) => React.JSX.Element }[] = [
+  { path: "/dashboard", label: "Dashboard",      icon: Ico.monitor },
+  { path: "/transaksi", label: "Data Transaksi", icon: Ico.folder  },
+  { path: "/kwitansi",  label: "Print Kwitansi", icon: Ico.receipt },
+  { path: "/nota",      label: "Nota",           icon: Ico.note    },
+  { path: "/trash",     label: "Riwayat Hapus",  icon: Ico.trash   },
 ];
 
-interface SidebarProps {
-  currentPage: Page;
-  adminName: string;
-  onNavigate: (page: Page) => void;
-}
+export function Sidebar() {
+  const navigate          = useNavigate();
+  const { pathname }      = useLocation();
+  const { currentAdmin }  = useAuth();
 
-export function Sidebar({ currentPage, adminName, onNavigate }: SidebarProps) {
-  const initials = adminName
+  const adminName = currentAdmin?.username ?? "";
+  const initials  = adminName
     .split(" ")
     .map((w) => w[0])
     .slice(0, 2)
@@ -31,21 +41,12 @@ export function Sidebar({ currentPage, adminName, onNavigate }: SidebarProps) {
       style={{ width: 220, background: color.sidebar }}
     >
       {/* Brand mark */}
-      <div className="px-5 py-5 border-b" style={{ borderColor: color.sidebarFade }}>
-        <div className="flex items-center gap-2.5">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-black flex-shrink-0"
-            style={{ background: color.brand }}
-          >
-            M
-          </div>
-          <div className="min-w-0">
-            <p className="text-white text-sm font-bold leading-tight">MyKwitansi</p>
-            <p className="text-xs truncate" style={{ color: "rgba(255,255,255,0.35)" }}>
-              Finance System
-            </p>
-          </div>
-        </div>
+      <div className="px-4 py-4 border-b flex items-center" style={{ borderColor: color.sidebarFade, height: 80 }}>
+        <img 
+          src="/logo-horizontal.png" 
+          alt="MyKwitansi" 
+          className="h-12 w-auto object-contain" 
+        />
       </div>
 
       {/* Navigation */}
@@ -56,12 +57,12 @@ export function Sidebar({ currentPage, adminName, onNavigate }: SidebarProps) {
         >
           MENU
         </p>
-        {NAV_ITEMS.map(({ page, label, icon }) => {
-          const active = currentPage === page;
+        {NAV_ITEMS.map(({ path, label, icon }) => {
+          const active = pathname === path;
           return (
             <button
-              key={page}
-              onClick={() => onNavigate(page)}
+              key={path}
+              onClick={() => navigate(path)}
               className="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-left"
               style={{
                 background: active ? color.brand : "transparent",

@@ -1,14 +1,26 @@
+/**
+ * Header — top bar with notification bell and logout button.
+ *
+ * Logout action: calls AuthContext.logout() then navigates to /login.
+ * Replaces the old onLogout prop.
+ */
+import { useNavigate } from "react-router-dom";
 import { tokens } from "../styles/tokens";
 import { Ico } from "../utils/icons";
 import { OutlineBtn } from "../components/ui";
+import { useAuth } from "../contexts/AuthContext";
 
 const { color } = tokens;
 
-interface HeaderProps {
-  onLogout: () => void;
-}
+export function Header() {
+  const { logout }  = useAuth();
+  const navigate    = useNavigate();
 
-export function Header({ onLogout }: HeaderProps) {
+  async function handleLogout() {
+    await logout();
+    navigate("/login", { replace: true });
+  }
+
   return (
     <header className="h-14 flex items-center justify-end px-6 gap-3 bg-white border-b border-gray-100 flex-shrink-0">
       {/* Notification bell */}
@@ -24,8 +36,8 @@ export function Header({ onLogout }: HeaderProps) {
         />
       </button>
 
-      {/* Logout — outline variant matches OutlineBtn spec */}
-      <OutlineBtn onClick={onLogout} className="py-1.5 px-3">
+      {/* Logout — matches OutlineBtn spec */}
+      <OutlineBtn onClick={handleLogout} className="py-1.5 px-3">
         {Ico.logout()} Keluar
       </OutlineBtn>
     </header>

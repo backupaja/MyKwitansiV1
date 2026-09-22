@@ -1,23 +1,44 @@
+/**
+ * TransaksiPage — protected route (/transaksi).
+ *
+ * Full CRUD:
+ *   Create  — "Tambah Transaksi" button opens a validated form modal.
+ *   Read    — table reflects live service state; re-fetches after every mutation.
+ *   Update  — row action "Edit" opens the same form pre-filled.
+ *   Delete  — row action "Hapus" opens a confirmation modal before deleting.
+ *
+ * Search — client-side against the current rows state (re-applied after mutations).
+ * Show entries — controlled pageSize state slices the filtered list.
+ *
+ * Business/data logic stays in transactionService.
+ * This component manages UI state only.
+ */
 import { useState, useEffect } from "react";
+import { tokens } from "../styles/tokens";
 import { Ico } from "../utils/icons";
-import { formatRp } from "../utils/formatters";
+import { formatRp, formatAdminName, formatDocumentNumber, formatCurrencyInput, parseCurrencyInput, formatDateInput } from "../utils/formatters";
 import {
-  PageHeader, Card, PrimaryBtn, Modal, FormField,
+  PageHeader, Card, PrimaryBtn, OutlineBtn, Modal, FormField,
   CardToolbar, TableControls, DataTable, Td,
 } from "../components/ui";
 import { transactionService } from "../services";
+import { useAuth } from "../contexts/AuthContext";
 import type { DataTransaksiView, CreateFormulirTransaksiInput } from "../types";
 
-// Displayed column headers (ERD field names mapped to human-readable labels)
+const { color } = tokens;
+
 const HEADERS = [
-  "No. Transaksi",   // id_data_transaksi
-  "Tgl Transaksi",   // tanggal_transaksi
-  "Tgl Input",       // tanggal_input
-  "Admin",           // admin_username
-  "Terima Dari",     // terima_dari
-  "Jumlah Uang",     // jumlah_uang
-  "Untuk Pembayaran",// untuk_pembayaran
+  "No. Transaksi",
+  "Tgl Transaksi",
+  "Tgl Input",
+  "Admin",
+  "Terima Dari",
+  "Jumlah Uang",
+  "Untuk Pembayaran",
+  "Aksi",
 ];
+
+// ─── Empty form state ─────────────────────────────────────────────────────────
 
 const EMPTY_FORM: CreateFormulirTransaksiInput = {
   tanggal_transaksi: "",
@@ -29,44 +50,171 @@ const EMPTY_FORM: CreateFormulirTransaksiInput = {
   total_harga:       0,
 };
 
+// ─── Field-level validation errors type ──────────────────────────────────────
+
+type FormErrors = Partial<Record<keyof CreateFormulirTransaksiInput, string>>;
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
 interface TransaksiPageProps {
-  adminId: number;
-  adminName: string;
   onToast: (message: string) => void;
 }
 
-export function TransaksiPage({ adminId, adminName: _adminName, onToast }: TransaksiPageProps) {
-  const [rows,     setRows]     = useState<DataTransaksiView[]>([]);
-  const [search,   setSearch]   = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [form,     setForm]     = useState<CreateFormulirTransaksiInput>(EMPTY_FORM);
+export function TransaksiPage({ onToast }: TransaksiPageProps) {
+  const { currentAdmin } = useAuth();
+  const adminId          = currentAdmin?.id_admin ?? 0;
 
-  // Load data on mount
+  // ── Data state ─────────────────────────────────────────────────────────────
+  const [rows, setRows] = useState<DataTransaksiView[]>([]);
+
+  // ── Search & pagination ────────────────────────────────────────────────────
+  const [search,      setSearch]      = useState("");
+  const [pageSize,    setPageSize]    = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // ── Create / Edit form modal ───────────────────────────────────────────────
+  const [formMode,   setFormMode]   = useState<"create" | "edit" | null>(null);
+  const [editTarget, setEditTarget] = useState<DataTransaksiView | null>(null);
+  const [form,       setForm]       = useState<CreateFormulirTransaksiInput>(EMPTY_FORM);
+  const [errors,     setErrors]     = useState<FormErrors>({});
+  const [saving,     setSaving]     = useState(false);
+
+  // ── Delete confirmation modal ──────────────────────────────────────────────
+  const [deleteTarget, setDeleteTarget] = useState<DataTransaksiView | null>(null);
+  const [deleting,     setDeleting]     = useState(false);
+
+  // ── View modal ─────────────────────────────────────────────────────────────
+  const [viewTarget, setViewTarget] = useState<DataTransaksiView | null>(null);
+
+  // ── Load on mount ──────────────────────────────────────────────────────────
   useEffect(() => {
     transactionService.getAll().then(setRows);
   }, []);
 
-  // Client-side search (replace with service.search() for server-side)
-  const filtered = rows.filter((t) =>
+  // ── Pagination helpers ────────────────────────────────────────────────────
+  function handleSearch(v: string) { setSearch(v); setCurrentPage(1); }
+  function handlePageSize(v: number) { setPageSize(v); setCurrentPage(1); }
+
+  // ── Derived: search → paginate ────────────────────────────────────────────
+  const filtered   = rows.filter((t) =>
     [t.admin_username, t.terima_dari, t.untuk_pembayaran].some((v) =>
       v.toLowerCase().includes(search.toLowerCase())
     )
   );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage   = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const paged      = filtered.slice(startIndex, startIndex + pageSize);
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
 
   function setField<K extends keyof CreateFormulirTransaksiInput>(
     key: K, value: CreateFormulirTransaksiInput[K]
   ) {
     setForm((prev) => ({ ...prev, [key]: value }));
+    // clear the error for this field as soon as the user edits it
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
   }
 
-  async function handleSubmit() {
-    await transactionService.create(form, adminId);
-    const updated = await transactionService.getAll();
-    setRows(updated);
-    setShowForm(false);
+  function openCreate() {
     setForm(EMPTY_FORM);
-    onToast("Data transaksi berhasil ditambahkan");
+    setErrors({});
+    setEditTarget(null);
+    setFormMode("create");
   }
+
+  function openEdit(row: DataTransaksiView) {
+    setForm({
+      tanggal_transaksi: row.tanggal_transaksi,
+      terima_dari:       row.terima_dari,
+      jumlah_uang:       row.jumlah_uang,
+      untuk_pembayaran:  row.untuk_pembayaran,
+      penerima_uang:     row.penerima_uang,
+      kota:              row.kota,
+      total_harga:       row.total_harga,
+    });
+    setErrors({});
+    setEditTarget(row);
+    setFormMode("edit");
+  }
+
+  function closeForm() {
+    setFormMode(null);
+    setEditTarget(null);
+    setErrors({});
+  }
+
+  // ─── Validation ─────────────────────────────────────────────────────────────
+
+  function validate(): boolean {
+    const e: FormErrors = {};
+
+    if (!form.tanggal_transaksi.trim())
+      e.tanggal_transaksi = "Tanggal transaksi wajib diisi.";
+
+    if (!form.terima_dari.trim())
+      e.terima_dari = "Terima dari wajib diisi.";
+
+    if (!form.jumlah_uang || isNaN(form.jumlah_uang) || form.jumlah_uang <= 0)
+      e.jumlah_uang = "Jumlah uang harus berupa angka lebih dari 0.";
+
+    if (!form.untuk_pembayaran.trim())
+      e.untuk_pembayaran = "Untuk pembayaran wajib diisi.";
+
+    if (!form.penerima_uang.trim())
+      e.penerima_uang = "Penerima uang wajib diisi.";
+
+    if (!form.kota.trim())
+      e.kota = "Kota wajib diisi.";
+
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  // ─── CRUD handlers ──────────────────────────────────────────────────────────
+
+  async function handleSubmit() {
+    if (saving || !validate()) return;
+    setSaving(true);
+    try {
+      if (formMode === "create") {
+        await transactionService.create(form, adminId);
+        onToast("Data transaksi berhasil ditambahkan.");
+      } else if (formMode === "edit" && editTarget) {
+        await transactionService.update(editTarget.id_data_transaksi, form, adminId);
+        onToast("Data transaksi berhasil diperbarui.");
+      }
+      const updated = await transactionService.getAll();
+      setRows(updated);
+      closeForm();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    try {
+      await transactionService.delete(deleteTarget.id_data_transaksi);
+      const updated = await transactionService.getAll();
+      setRows(updated);
+      // Clamp page if the deletion emptied the current page
+      const newFiltered = updated.filter((t) =>
+        [t.admin_username, t.terima_dari, t.untuk_pembayaran].some((v) =>
+          v.toLowerCase().includes(search.toLowerCase())
+        )
+      );
+      const newTotalPages = Math.max(1, Math.ceil(newFiltered.length / pageSize));
+      setCurrentPage((p) => Math.min(p, newTotalPages));
+      onToast("Data transaksi berhasil dihapus.");
+    } finally {
+      setDeleting(false);
+      setDeleteTarget(null);
+    }
+  }
+
+  // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <div>
@@ -75,40 +223,236 @@ export function TransaksiPage({ adminId, adminName: _adminName, onToast }: Trans
       <Card className="p-5">
         <CardToolbar
           left={
-            <PrimaryBtn onClick={() => setShowForm(true)}>
+            <PrimaryBtn onClick={openCreate}>
               {Ico.plus()} Tambah Transaksi
             </PrimaryBtn>
           }
-          right={<TableControls search={search} onSearch={setSearch} />}
+          right={
+            <TableControls
+              search={search}
+              onSearch={handleSearch}
+              pageSize={pageSize}
+              onPageSize={handlePageSize}
+            />
+          }
         />
 
-        <DataTable headers={HEADERS} shownEntries={filtered.length} totalEntries={202}>
-          {filtered.map((t) => (
+        <DataTable
+          headers={HEADERS}
+          shownEntries={paged.length}
+          totalEntries={filtered.length}
+          currentPage={safePage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        >
+          {paged.map((t) => (
             <tr key={t.id_data_transaksi} className="tr-hover">
-              <td className="px-4 py-3.5"><input type="checkbox" /></td>
-              <Td>{t.id_data_transaksi}</Td>
+              <Td>{formatDocumentNumber(t.id_data_transaksi)}</Td>
               <Td>{t.tanggal_transaksi}</Td>
-              <Td>{t.tanggal_input}</Td>
-              <Td accent>{t.admin_username}</Td>
+              <Td>{formatDateInput(t.tanggal_input)}</Td>
+              <Td accent>{formatAdminName(t.admin_username)}</Td>
               <Td>{t.terima_dari}</Td>
-              <Td mono>{formatRp(t.jumlah_uang)}</Td>
+              <Td mono>{formatCurrencyInput(String(t.jumlah_uang))}</Td>
               <Td>{t.untuk_pembayaran}</Td>
+              {/* ── Row actions ── */}
+              <td className="px-4 py-3 text-center whitespace-nowrap">
+                <div className="flex items-center gap-1.5 justify-center">
+                  <button
+                    onClick={() => setViewTarget(t)}
+                    title="Lihat transaksi"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold
+                      border transition-colors duration-100"
+                    style={{ color: "#374151", borderColor: "#e5e7eb", background: "transparent" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#f3f4f6"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    {Ico.receipt()} View
+                  </button>
+                  <button
+                    onClick={() => openEdit(t)}
+                    title="Edit transaksi"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold
+                      border transition-colors duration-100"
+                    style={{ color: color.brand, borderColor: color.brand, background: "transparent" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = color.brandSoft; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    {Ico.edit()} Edit
+                  </button>
+                  <button
+                    onClick={() => setDeleteTarget(t)}
+                    title="Hapus transaksi"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold
+                      border border-red-200 text-red-600 bg-transparent transition-colors duration-100
+                      hover:bg-red-50"
+                  >
+                    {Ico.trash()} Hapus
+                  </button>
+                </div>
+              </td>
             </tr>
           ))}
+
+          {paged.length === 0 && (
+            <tr>
+              <td colSpan={HEADERS.length + 1} className="px-4 py-10 text-center text-sm text-gray-400">
+                {search ? `Tidak ada hasil untuk "${search}".` : "Belum ada data transaksi."}
+              </td>
+            </tr>
+          )}
         </DataTable>
       </Card>
 
-      {showForm && (
-        <Modal title="Tambah Transaksi" onClose={() => setShowForm(false)}>
-          <FormField label="Tanggal Transaksi" type="date"   value={form.tanggal_transaksi}  onChange={(v) => setField("tanggal_transaksi", v)} />
-          <FormField label="Terima Dari"       type="text"   value={form.terima_dari}         onChange={(v) => setField("terima_dari", v)} />
-          <FormField label="Jumlah Uang"       type="number" value={String(form.jumlah_uang)} onChange={(v) => setField("jumlah_uang", Number(v))} />
-          <FormField label="Untuk Pembayaran"  type="text"   value={form.untuk_pembayaran}    onChange={(v) => setField("untuk_pembayaran", v)} />
-          <FormField label="Penerima Uang"     type="text"   value={form.penerima_uang}        onChange={(v) => setField("penerima_uang", v)} />
-          <FormField label="Kota"              type="text"   value={form.kota}                onChange={(v) => setField("kota", v)} />
-          <PrimaryBtn onClick={handleSubmit} className="w-full justify-center mt-4">
-            Simpan
-          </PrimaryBtn>
+      {/* ── Create / Edit form modal ─────────────────────────────────────── */}
+      {formMode !== null && (
+        <Modal
+          title={formMode === "create" ? "Tambah Transaksi" : "Edit Transaksi"}
+          onClose={closeForm}
+        >
+          <FormField
+            label="Tanggal Transaksi"
+            type="date"
+            value={form.tanggal_transaksi}
+            onChange={(v) => setField("tanggal_transaksi", v)}
+            error={errors.tanggal_transaksi}
+          />
+          <FormField
+            label="Terima Dari"
+            type="text"
+            value={form.terima_dari}
+            onChange={(v) => setField("terima_dari", v)}
+            placeholder="Nama instansi / perorangan"
+            error={errors.terima_dari}
+          />
+          <FormField
+            label="Jumlah Uang (Rp)"
+            type="text"
+            value={formatCurrencyInput(String(form.jumlah_uang))}
+            onChange={(v) => setField("jumlah_uang", parseCurrencyInput(v))}
+            placeholder="Rp 0"
+            error={errors.jumlah_uang}
+          />
+          <FormField
+            label="Untuk Pembayaran"
+            type="text"
+            value={form.untuk_pembayaran}
+            onChange={(v) => setField("untuk_pembayaran", v)}
+            placeholder="Keterangan pembayaran"
+            error={errors.untuk_pembayaran}
+          />
+          <FormField
+            label="Penerima Uang"
+            type="text"
+            value={form.penerima_uang}
+            onChange={(v) => setField("penerima_uang", v)}
+            placeholder="Nama penerima"
+            error={errors.penerima_uang}
+          />
+          <FormField
+            label="Kota"
+            type="text"
+            value={form.kota}
+            onChange={(v) => setField("kota", v)}
+            placeholder="Jakarta"
+            error={errors.kota}
+          />
+
+          <div className="flex gap-2 mt-5">
+            <PrimaryBtn
+              onClick={handleSubmit}
+              disabled={saving}
+              className="flex-1 justify-center"
+            >
+              {saving ? "Menyimpan…" : formMode === "create" ? "Simpan Transaksi" : "Perbarui Transaksi"}
+            </PrimaryBtn>
+            <OutlineBtn onClick={closeForm} className="px-4">
+              Batal
+            </OutlineBtn>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Delete confirmation modal ────────────────────────────────────── */}
+      {deleteTarget && (
+        <Modal title="Hapus Transaksi" onClose={() => !deleting && setDeleteTarget(null)}>
+          <div className="text-center py-2">
+            {/* Warning icon */}
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ background: "#fef2f2" }}
+            >
+              <svg viewBox="0 0 24 24" fill="#dc2626" className="w-6 h-6">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+              </svg>
+            </div>
+
+            <p className="text-sm font-semibold text-gray-900 mb-1">
+              Hapus transaksi ini?
+            </p>
+            <p className="text-xs text-gray-400 mb-1">
+              No. {deleteTarget.id_data_transaksi} — {deleteTarget.terima_dari}
+            </p>
+            <p className="text-xs text-gray-400 mb-6">
+              {formatRp(deleteTarget.jumlah_uang)} · {deleteTarget.untuk_pembayaran}
+            </p>
+            <p className="text-xs text-red-500 mb-6">
+              Tindakan ini tidak dapat dibatalkan.
+            </p>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white
+                  transition-colors disabled:opacity-40"
+                style={{ background: "#dc2626" }}
+                onMouseEnter={(e) => { if (!deleting) e.currentTarget.style.background = "#b91c1c"; }}
+                onMouseLeave={(e) => { if (!deleting) e.currentTarget.style.background = "#dc2626"; }}
+              >
+                {deleting ? "Menghapus…" : "Ya, Hapus"}
+              </button>
+              <OutlineBtn
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="flex-1 justify-center"
+              >
+                Batal
+              </OutlineBtn>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── View Modal (Read-Only) ─────────────────────────────────────────── */}
+      {viewTarget && (
+        <Modal title="Detail Transaksi" onClose={() => setViewTarget(null)} wide>
+          <div className="space-y-4">
+            {[
+              { label: "No. Transaksi", value: formatDocumentNumber(viewTarget.id_data_transaksi) },
+              { label: "Admin Input", value: formatAdminName(viewTarget.admin_username) },
+              { label: "Tanggal Input", value: viewTarget.tanggal_input },
+              { label: "Tanggal Transaksi", value: viewTarget.tanggal_transaksi },
+              { label: "Diterima Dari", value: viewTarget.terima_dari },
+              { label: "Penerima Uang", value: viewTarget.penerima_uang },
+              { label: "Untuk Pembayaran", value: viewTarget.untuk_pembayaran },
+              { label: "Kota", value: viewTarget.kota },
+              { label: "Jumlah Uang", value: formatRp(viewTarget.jumlah_uang) },
+              { label: "Total Harga", value: formatRp(viewTarget.total_harga) },
+            ].map((row) => (
+              <div key={row.label} className="flex gap-4">
+                <span className="text-sm font-semibold text-gray-700 text-right flex-shrink-0" style={{ width: 150 }}>
+                  {row.label}
+                </span>
+                <span className="flex-1 text-sm text-gray-800 border-b border-gray-200 pb-1">
+                  {row.value}
+                </span>
+              </div>
+            ))}
+            
+            <div className="mt-8 flex justify-end">
+              <PrimaryBtn onClick={() => setViewTarget(null)}>Tutup</PrimaryBtn>
+            </div>
+          </div>
         </Modal>
       )}
     </div>

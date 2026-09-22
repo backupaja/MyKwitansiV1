@@ -1,26 +1,27 @@
+/**
+ * AppLayout — authenticated page shell.
+ *
+ * Composes Sidebar + Header + Toast + main content area.
+ * Auth state (adminName, logout) is consumed from AuthContext
+ * inside Sidebar and Header — not passed as props.
+ */
 import { Sidebar } from "./Sidebar";
 import { Header }  from "./Header";
 import { Toast }   from "../components/ui";
-import type { Page } from "../App";
 
 interface AppLayoutProps {
-  currentPage: Page;
-  adminName: string;
+  /** Toast message forwarded from App-level state. */
   toast: string;
-  onNavigate: (page: Page) => void;
-  onLogout: () => void;
   children: React.ReactNode;
 }
 
-export function AppLayout({
-  currentPage, adminName, toast, onNavigate, onLogout, children,
-}: AppLayoutProps) {
+export function AppLayout({ toast, children }: AppLayoutProps) {
   return (
     <div className="flex min-h-screen" style={{ background: "#f8f7f6" }}>
-      <Sidebar currentPage={currentPage} adminName={adminName} onNavigate={onNavigate} />
+      <Sidebar />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Toast message={toast} />
-        <Header onLogout={onLogout} />
+        <Header />
         <main className="flex-1 p-6 overflow-auto">{children}</main>
       </div>
     </div>

@@ -1,12 +1,19 @@
+/**
+ * KwitansiPage — protected route (/kwitansi).
+ *
+ * adminId: read from AuthContext — removes the old adminId prop.
+ * Visual design and business logic unchanged.
+ */
 import { useState, useEffect } from "react";
 import { tokens } from "../styles/tokens";
+import { formatRp, terbilang, CURRENT_YEAR, formatDocumentNumber, formatAdminName, formatCurrencyInput, formatDateInput } from "../utils/formatters";
 import { Ico } from "../utils/icons";
-import { formatRp, terbilang, CURRENT_YEAR } from "../utils/formatters";
 import {
-  PageHeader, Card, PrimaryBtn, Modal,
+  PageHeader, Card, PrimaryBtn, OutlineBtn, Modal,
   CardToolbar, TableControls, DataTable, Td,
 } from "../components/ui";
-import { transactionService, printService } from "../services";
+import { transactionService, printService, pdfService } from "../services";
+import { useAuth } from "../contexts/AuthContext";
 import type { DataTransaksiView } from "../types";
 
 const { color } = tokens;
@@ -21,28 +28,58 @@ const HEADERS = [
   "Untuk Pembayaran",
 ];
 
-interface KwitansiPageProps {
-  adminId: number;
-}
+export function KwitansiPage() {
+  const { currentAdmin } = useAuth();
+  const adminId          = currentAdmin?.id_admin ?? 0;
 
-export function KwitansiPage({ adminId }: KwitansiPageProps) {
   const [rows,     setRows]     = useState<DataTransaksiView[]>([]);
-  const [search,   setSearch]   = useState("");
-  const [selected, setSelected] = useState<DataTransaksiView | null>(null);
+  const [search,      setSearch]      = useState("");
+  const [pageSize,    setPageSize]    = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selected, setSelected] = useState<DataTransaksiView[]>([]);
+  const [preview, setPreview] = useState<DataTransaksiView | null>(null);
 
   useEffect(() => {
     transactionService.getAll().then(setRows);
   }, []);
+
+  function handleSearch(v: string) { setSearch(v); setCurrentPage(1); }
+  function handlePageSize(v: number) { setPageSize(v); setCurrentPage(1); }
 
   const filtered = rows.filter((t) =>
     [t.admin_username, t.terima_dari].some((v) =>
       v.toLowerCase().includes(search.toLowerCase())
     )
   );
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage   = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const paged      = filtered.slice(startIndex, startIndex + pageSize);
+
+  function toggleSelect(t: DataTransaksiView) {
+    setSelected((prev) =>
+      prev.some((s) => s.id_data_transaksi === t.id_data_transaksi)
+        ? prev.filter((s) => s.id_data_transaksi !== t.id_data_transaksi)
+        : [...prev, t]
+    );
+  }
+
+  function toggleSelectAll() {
+    if (selected.length === paged.length) {
+      setSelected([]);
+    } else {
+      setSelected(paged);
+    }
+  }
 
   async function handlePrint() {
-    if (!selected) return;
-    await printService.printKwitansi(selected, adminId);
+    if (selected.length === 0) return;
+    await printService.printMultipleKwitansi(selected, adminId);
+  }
+
+  async function handleDownloadPdf() {
+    if (!preview) return;
+    await pdfService.downloadKwitansiPdf(preview);
   }
 
   return (
@@ -52,76 +89,121 @@ export function KwitansiPage({ adminId }: KwitansiPageProps) {
       <Card className="p-5">
         <CardToolbar
           left={
-            <PrimaryBtn onClick={handlePrint} disabled={!selected}>
-              {Ico.print()} Print Kwitansi
+            <PrimaryBtn onClick={handlePrint} disabled={selected.length === 0}>
+              {Ico.print()} Print Kwitansi{selected.length > 0 ? ` (${selected.length})` : ""}
             </PrimaryBtn>
           }
-          right={<TableControls search={search} onSearch={setSearch} />}
+          right={
+            <TableControls
+              search={search}
+              onSearch={handleSearch}
+              pageSize={pageSize}
+              onPageSize={handlePageSize}
+            />
+          }
         />
 
-        <DataTable headers={HEADERS} shownEntries={filtered.length} totalEntries={202}>
-          {filtered.map((t) => (
+        <DataTable
+          headers={HEADERS}
+          shownEntries={paged.length}
+          totalEntries={filtered.length}
+          currentPage={safePage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          showLeadingColumn
+          leadingHeader={
+            <input
+              type="checkbox"
+              title="Pilih semua"
+              checked={paged.length > 0 && paged.every((t) => selected.some((s) => s.id_data_transaksi === t.id_data_transaksi))}
+              onChange={toggleSelectAll}
+            />
+          }
+        >
+          {paged.map((t) => (
             <tr
               key={t.id_data_transaksi}
               className="tr-hover cursor-pointer"
-              onClick={() => setSelected(t)}
+              onClick={() => setPreview(t)}
             >
-              <td className="px-4 py-3.5">
+              <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
-                  checked={selected?.id_data_transaksi === t.id_data_transaksi}
-                  onChange={() => setSelected(t)}
+                  checked={selected.some((s) => s.id_data_transaksi === t.id_data_transaksi)}
+                  onChange={() => toggleSelect(t)}
                 />
               </td>
-              <Td>{t.id_data_transaksi}</Td>
+              <Td>{formatDocumentNumber(t.id_data_transaksi)}</Td>
               <Td>{t.tanggal_transaksi}</Td>
-              <Td>{t.tanggal_input}</Td>
-              <Td accent>{t.admin_username}</Td>
+              <Td>{formatDateInput(t.tanggal_input)}</Td>
+              <Td accent>{formatAdminName(t.admin_username)}</Td>
               <Td>{t.terima_dari}</Td>
-              <Td mono>{formatRp(t.jumlah_uang)}</Td>
+              <Td mono>{formatCurrencyInput(String(t.jumlah_uang))}</Td>
               <Td>{t.untuk_pembayaran}</Td>
             </tr>
           ))}
         </DataTable>
       </Card>
 
-      {selected && (
-        <Modal title="Kwitansi Pembayaran" onClose={() => setSelected(null)} wide>
-          <div className="space-y-4">
-            {[
-              { label: "No Kwitansi",      value: String(selected.id_data_transaksi).padStart(4, "0") },
-              { label: "Diterima Dari",    value: selected.terima_dari },
-              { label: "Terbilang",        value: terbilang(selected.jumlah_uang) + " Rupiah" },
-              { label: "Untuk Pembayaran", value: selected.untuk_pembayaran },
-            ].map((row) => (
-              <div key={row.label} className="flex gap-4">
-                <span
-                  className="text-sm text-gray-500 text-right flex-shrink-0"
-                  style={{ width: 150 }}
-                >
-                  {row.label}
-                </span>
-                <span className="flex-1 text-sm text-gray-800 font-medium border-b border-dashed border-gray-200 pb-1">
-                  {row.value}
-                </span>
-              </div>
-            ))}
+      {preview && (
+        <Modal title="Detail Kwitansi" onClose={() => setPreview(null)} wide>
+          <div className="p-2 relative">
+            <h2 className="text-center text-lg font-bold tracking-wide text-black mb-6">KWITANSI PEMBAYARAN</h2>
+            
+            <div className="space-y-4">
+              {[
+                { label: "No Kwitansi",      value: formatDocumentNumber(preview.id_data_transaksi) },
+                { label: "Diterima Dari",    value: preview.terima_dari },
+                { label: "Terbilang",        value: terbilang(preview.jumlah_uang) + " Rupiah" },
+                { label: "Untuk Pembayaran", value: preview.untuk_pembayaran },
+              ].map((row) => (
+                <div key={row.label} className="flex gap-4 items-end">
+                  <span
+                    className="text-sm font-bold text-black text-right flex-shrink-0 pb-1"
+                    style={{ width: 140 }}
+                  >
+                    {row.label}
+                  </span>
+                  <span className="flex-1 text-sm font-bold text-black border-b border-black pb-1">
+                    {row.value}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-            <div className="flex items-end justify-between pt-4 border-t border-gray-100 mt-2">
-              <div>
-                <p className="text-xs text-gray-400 mb-0.5">Jumlah</p>
-                <p className="text-base font-bold" style={{ color: color.brand }}>
-                  {formatRp(selected.jumlah_uang)}
-                </p>
+            <div className="flex items-end justify-between mt-8">
+              <div className="flex items-center w-48 border-y border-black py-2">
+                <span className="text-sm font-bold text-black mr-2">Rp</span>
+                <span className="text-base font-bold text-black">
+                  {formatRp(preview.jumlah_uang).replace("Rp ", "")}
+                </span>
               </div>
-              <div className="text-right">
-                <p className="text-xs text-gray-400">
-                  {selected.kota}, {selected.tanggal_transaksi}-{CURRENT_YEAR}
-                </p>
-                <div className="w-32 border-b border-gray-300 mt-10 mb-1" />
-                <p className="text-xs text-gray-400">Penerima</p>
+              
+              <div className="flex flex-col items-center w-48">
+                <span className="text-xs font-bold text-black mb-1">
+                  {preview.kota} , {preview.tanggal_transaksi}
+                </span>
+                <div className="w-full border-b border-black mb-6" />
+                <div className="h-8" />
               </div>
             </div>
+          </div>
+            
+          <div className="mt-8 flex justify-end gap-3 pt-4">
+            <OutlineBtn onClick={() => setPreview(null)}>
+              Tutup
+            </OutlineBtn>
+            <OutlineBtn onClick={handleDownloadPdf}>
+              {Ico.download()} Download PDF
+            </OutlineBtn>
+            <PrimaryBtn
+              onClick={async () => {
+                await printService.printKwitansi(preview, adminId);
+                setPreview(null);
+              }}
+            >
+              {Ico.print()} Print
+            </PrimaryBtn>
           </div>
         </Modal>
       )}

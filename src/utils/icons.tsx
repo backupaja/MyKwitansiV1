@@ -75,4 +75,24 @@ export const Ico = {
       <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
     </svg>
   ),
+  edit: (c = "w-3.5 h-3.5") => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={c}>
+      <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zm17.71-10.46a1 1 0 0 0 0-1.42l-2.34-2.34a1 1 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z" />
+    </svg>
+  ),
+  trash: (c = "w-3.5 h-3.5") => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={c}>
+      <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+    </svg>
+  ),
+  download: (c = "w-4 h-4") => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={c}>
+      <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+    </svg>
+  ),
+  sync: (c = "w-4 h-4") => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={c}>
+      <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
+    </svg>
+  ),
 } as const;

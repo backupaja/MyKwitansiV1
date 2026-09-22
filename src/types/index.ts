@@ -1,118 +1,132 @@
 /**
- * Domain types aligned with the ERD (see src/imports/erd.png).
+ * Domain types aligned with the FINAL locked database schema.
  *
- * All primary keys and foreign keys are int(11) in the ERD → typed as number.
- * Field names match the ERD exactly. UI display labels live in page components.
+ * FINAL DATABASE DECISIONS:
+ *   • data_transaksi table → REMOVED
+ *   • data_nota table      → REMOVED
+ *   • Admin ownership stored directly on formulir_transaksi and formulir_nota.
+ *   • INTEGER auto-increment PKs throughout.
+ *   • TEXT (ISO 8601) for all date fields.
  *
- * ⚠ ERD NOTES:
- *
- * 1. formulir_transaksi has a duplicate "tanggal_transaksi timestamp" row in
- *    the ERD diagram. This appears to be a diagram artefact. Only one field is
- *    kept here; the database developer must confirm before schema creation.
- *
- * 2. formulir_nota PK is labelled "id_formulir_transaksi" in the ERD entity
- *    box, but data_nota references it as FK "id_formulir_nota". The FK name is
- *    authoritative (it disambiguates the two entities). The PK is normalised
- *    here to id_formulir_nota until the DB developer confirms the schema.
+ * UI COMPATIBILITY NOTES:
+ *   • DataTransaksiView.id_data_transaksi is kept as a UI display alias for
+ *     id_formulir_transaksi. The mock service sets them equal. The real service
+ *     implementation should populate id_data_transaksi from id_formulir_transaksi.
+ *   • DataNotaView.id_data_nota is kept as a UI display alias for
+ *     id_formulir_nota. Same rule applies.
+ *   • This preserves zero UI/page changes while the Service Layer is migrated.
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Core enum
+// Enums
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type AdminJabatan = "bang_karir" | "bang_tensi";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ERD entities
+// Core ERD Entities (final schema tables only)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** admin — ERD: id_admin int(11) PK */
+/** admin — final schema table */
 export interface Admin {
   id_admin:  number;
   jabatan:   AdminJabatan;
   username:  string;
-  /** Stored hashed; never returned to the client after login. */
+  /** Stored as bcrypt/Argon2 hash; never returned to the client after login. */
   password?: string;
 }
 
 /**
- * formulir_transaksi — ERD: id_formulir_transaksi int(11) PK
+ * formulir_transaksi — final schema table
  *
- * ⚠ The ERD lists "tanggal_transaksi timestamp" twice. Only one field is
- * modelled here. Confirm with the DB developer before schema migration.
+ * NOTE: data_transaksi has been removed. id_admin is stored directly here.
  */
 export interface FormulirTransaksi {
   id_formulir_transaksi: number;
-  terima_dari:           string;   // varchar(20)
-  jumlah_uang:           number;   // decimal(11,2)
-  untuk_pembayaran:      string;   // varchar(20)
-  penerima_uang:         string;   // varchar(20)
-  tanggal_transaksi:     string;   // timestamp — ISO date string in the frontend
-  tanggal_input:         string;   // timestamp (ERD typo: "tiemstamp") — set by server
-  total_harga:           number;   // decimal(11,2)
-  kota:                  string;   // varchar(20)
+  terima_dari:           string;
+  jumlah_uang:           number;   // DECIMAL(11,2)
+  untuk_pembayaran:      string;
+  penerima_uang:         string;
+  tanggal_transaksi:     string;   // TEXT — ISO 8601
+  tanggal_input:         string;   // TEXT — ISO 8601, set at creation
+  total_harga:           number;   // DECIMAL(11,2) — cached; mirrors jumlah_uang currently
+  kota:                  string;
   id_admin:              number;   // FK → admin.id_admin
 }
 
-/** data_transaksi — ERD: id_data_transaksi int(11) PK */
-export interface DataTransaksi {
-  id_data_transaksi:     number;
-  id_formulir_transaksi: number;  // FK → formulir_transaksi.id_formulir_transaksi
-  id_admin:              number;  // FK → admin.id_admin
-}
-
-/** print_kwitansi — ERD: id_print_kwitansi int(11) PK */
-export interface PrintKwitansi {
-  id_print_kwitansi: number;
-  id_admin:          number;  // FK → admin.id_admin
-  id_data_transaksi: number;  // FK → data_transaksi.id_data_transaksi
-}
-
 /**
- * formulir_nota — ERD: PK labelled "id_formulir_transaksi" in the diagram but
- * referenced as "id_formulir_nota" in data_nota FK. Normalised to
- * id_formulir_nota here.
+ * formulir_nota — final schema table
+ *
+ * NOTE: data_nota has been removed. id_admin is stored directly here.
  */
 export interface FormulirNota {
-  id_formulir_nota:  number;   // PK int(11)  ⚠ see note above
-  tanggal_transaksi: string;   // timestamp — ISO date string in the frontend
-  nama_barang:       string;   // varchar(20)
-  satuan:            string;   // varchar(10)
-  harga:             number;   // decimal(11,2)
-  jumlah_item:       number;   // int(11)
-  sub_total_harga:   number;   // decimal(11,2)
-  total_harga:       number;   // decimal(11,2)
+  id_formulir_nota:  number;
+  tanggal_transaksi: string;   // TEXT — ISO 8601
+  total_harga:       number;   // DECIMAL(11,2) — cached SUM(item_nota.sub_total_harga)
   id_admin:          number;   // FK → admin.id_admin
 }
 
-/** data_nota — ERD: id_data_nota int(11) PK */
-export interface DataNota {
-  id_data_nota:    number;
-  id_admin:        number;  // FK → admin.id_admin
-  id_formulir_nota: number; // FK → formulir_nota.id_formulir_nota
+/** item_nota — final schema table. N items belong to one formulir_nota. */
+export interface ItemNota {
+  id_item_nota:     number;
+  id_formulir_nota: number;    // FK → formulir_nota.id_formulir_nota  ON DELETE CASCADE
+  nama_barang:      string;
+  satuan:           string;
+  harga:            number;    // DECIMAL(11,2)
+  jumlah_item:      number;
+  sub_total_harga:  number;    // DECIMAL(11,2) — cached: harga × jumlah_item
 }
 
-/** print_nota — ERD: id_print_nota int(11) PK */
+/**
+ * print_kwitansi — append-only audit log table.
+ *
+ * Each print action inserts a new row.
+ * Links to formulir_transaksi directly (data_transaksi removed).
+ */
+export interface PrintKwitansi {
+  id_print_kwitansi:     number;
+  id_formulir_transaksi: number;   // FK → formulir_transaksi.id_formulir_transaksi
+  id_admin:              number;   // FK → admin.id_admin
+  print_timestamp:       string;   // TEXT — ISO 8601
+}
+
+/**
+ * print_nota — append-only audit log table.
+ *
+ * Each print action inserts a new row.
+ * Links to formulir_nota directly (data_nota removed).
+ */
 export interface PrintNota {
-  id_print_nota: number;
-  id_data_nota:  number;  // FK → data_nota.id_data_nota
-  id_admin:      number;  // FK → admin.id_admin
+  id_print_nota:    number;
+  id_formulir_nota: number;   // FK → formulir_nota.id_formulir_nota
+  id_admin:         number;   // FK → admin.id_admin
+  print_timestamp:  string;   // TEXT — ISO 8601
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// View / joined types used by the UI
+// View / Joined Types — used by the UI
 //
-// These resolve foreign keys for display. They introduce no new domain
-// concepts — every field maps back to an ERD entity or Admin.username.
+// These flatten foreign key joins for display. They introduce no new domain
+// concepts — every field maps back to a final schema table or admin.username.
+//
+// UI COMPATIBILITY:
+//   id_data_transaksi  →  alias for id_formulir_transaksi (display number)
+//   id_data_nota       →  alias for id_formulir_nota      (display number)
+//
+// The real service implementation must populate these from the formulir tables.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Row shape for Data Transaksi and Print Kwitansi tables. */
+/** Row shape for the Transaction table and Kwitansi view. */
 export interface DataTransaksiView {
-  // data_transaksi fields
-  id_data_transaksi:     number;
+  // ── From formulir_transaksi ──────────────────────────────────────────────
   id_formulir_transaksi: number;
+  /**
+   * UI display alias for id_formulir_transaksi.
+   * Set equal to id_formulir_transaksi by the service layer.
+   * Kept for zero-change UI compatibility during migration.
+   */
+  id_data_transaksi:     number;
   id_admin:              number;
-  // resolved from formulir_transaksi
   tanggal_transaksi:     string;
   tanggal_input:         string;
   terima_dari:           string;
@@ -121,30 +135,36 @@ export interface DataTransaksiView {
   penerima_uang:         string;
   kota:                  string;
   total_harga:           number;
-  // resolved from admin
+  deleted_at:            string | null;
+  // ── From admin ──────────────────────────────────────────────────────────
   admin_username:        string;
 }
 
-/** Row shape for Data Nota table. */
+/** Row shape for the Nota table (header + nested items). */
 export interface DataNotaView {
-  // data_nota fields
-  id_data_nota:     number;
-  id_formulir_nota: number;
-  id_admin:         number;
-  // resolved from formulir_nota
+  // ── From formulir_nota ───────────────────────────────────────────────────
+  id_formulir_nota:  number;
+  /**
+   * UI display alias for id_formulir_nota.
+   * Set equal to id_formulir_nota by the service layer.
+   * Kept for zero-change UI compatibility during migration.
+   */
+  id_data_nota:      number;
+  id_admin:          number;
   tanggal_transaksi: string;
-  nama_barang:       string;
-  satuan:            string;
-  harga:             number;
-  jumlah_item:       number;
-  sub_total_harga:   number;
+  tanggal_input:     string;
   total_harga:       number;
-  // resolved from admin
+  deleted_at:        string | null;
+  // ── From admin ──────────────────────────────────────────────────────────
   admin_username:    string;
+  // ── From item_nota ───────────────────────────────────────────────────────
+  items:             ItemNota[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Form input types — fields the user fills in when creating a new record.
+// Form Input Types
+//
+// Fields the user fills in when creating/updating a record.
 // Server-generated fields (PKs, tanggal_input, computed totals) are excluded.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -153,7 +173,12 @@ export type CreateFormulirTransaksiInput = Omit<
   "id_formulir_transaksi" | "tanggal_input" | "id_admin"
 >;
 
-export type CreateFormulirNotaInput = Omit<
-  FormulirNota,
-  "id_formulir_nota" | "id_admin" | "sub_total_harga" | "total_harga"
->;
+export interface CreateFormulirNotaInput {
+  tanggal_transaksi: string;
+  items: Array<{
+    nama_barang: string;
+    satuan:      string;
+    harga:       number;
+    jumlah_item: number;
+  }>;
+}

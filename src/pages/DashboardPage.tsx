@@ -1,30 +1,38 @@
+/**
+ * DashboardPage — protected route (/dashboard).
+ *
+ * Admin greeting: reads currentAdmin from AuthContext.
+ * Card navigation: useNavigate() — replaces the old onNavigate prop.
+ * Visual design unchanged from the Figma-approved layout.
+ */
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { tokens } from "../styles/tokens";
 import { Ico } from "../utils/icons";
 import { PageHeader } from "../components/ui";
 import { TODAY_LABEL } from "../utils/formatters";
-import type { Page } from "../App";
+import { useAuth } from "../contexts/AuthContext";
 
 const { color } = tokens;
 
 const MENU_CARDS: {
-  page: Page;
+  path: string;
   label: string;
   desc: string;
-  icon: (c?: string) => JSX.Element;
+  icon: (c?: string) => React.JSX.Element;
   accent: string;
   bg: string;
 }[] = [
-  { page: "transaksi", label: "Data Transaksi", desc: "Lihat & kelola semua transaksi",  icon: Ico.folder,  accent: color.brand, bg: color.brandSoft },
-  { page: "kwitansi",  label: "Print Kwitansi", desc: "Cetak kwitansi pembayaran",        icon: Ico.receipt, accent: "#b45309",   bg: "#fffbeb"       },
-  { page: "nota",      label: "Nota",           desc: "Kelola data nota barang",          icon: Ico.note,    accent: "#0369a1",   bg: "#eff6ff"       },
+  { path: "/transaksi", label: "Data Transaksi", desc: "Lihat & kelola semua transaksi",  icon: Ico.folder,  accent: color.brand, bg: color.brandSoft },
+  { path: "/kwitansi",  label: "Print Kwitansi", desc: "Cetak kwitansi pembayaran",        icon: Ico.receipt, accent: "#b45309",   bg: "#fffbeb"       },
+  { path: "/nota",      label: "Nota",           desc: "Kelola data nota barang",          icon: Ico.note,    accent: "#0369a1",   bg: "#eff6ff"       },
 ];
 
-interface DashboardPageProps {
-  adminName: string;
-  onNavigate: (page: Page) => void;
-}
+export function DashboardPage() {
+  const { currentAdmin } = useAuth();
+  const navigate         = useNavigate();
+  const adminName        = currentAdmin?.username ?? "";
 
-export function DashboardPage({ adminName, onNavigate }: DashboardPageProps) {
   return (
     <div>
       <PageHeader
@@ -35,8 +43,8 @@ export function DashboardPage({ adminName, onNavigate }: DashboardPageProps) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {MENU_CARDS.map((c) => (
           <button
-            key={c.page}
-            onClick={() => onNavigate(c.page)}
+            key={c.path}
+            onClick={() => navigate(c.path)}
             className="group bg-white rounded-2xl border border-gray-100 shadow-sm
               hover:shadow-md transition-all text-left p-5 active:scale-[0.99]"
           >

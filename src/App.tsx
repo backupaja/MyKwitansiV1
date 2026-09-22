@@ -1,60 +1,54 @@
+/**
+ * App — root component.
+ *
+ * Sets up:
+ *  - BrowserRouter (URL-based navigation)
+ *  - AuthProvider  (global auth context)
+ *  - Route tree    (public /login + protected shell)
+ *  - Toast state   (UI-only, not auth-related)
+ */
 import { useState } from "react";
-import { AppLayout } from "./layouts/AppLayout";
-import { LoginPage } from "./pages/LoginPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { TransaksiPage } from "./pages/TransaksiPage";
-import { KwitansiPage } from "./pages/KwitansiPage";
-import { NotaPage } from "./pages/NotaPage";
-import { adminService } from "./services";
-import type { Admin } from "./types";
-
-export type Page = "login" | "dashboard" | "transaksi" | "kwitansi" | "nota";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider }     from "./contexts/AuthContext";
+import { ProtectedRoute }   from "./components/routing/ProtectedRoute";
+import { AppLayoutRoute }   from "./layouts/AppLayoutRoute";
+import { LoginPage }        from "./pages/LoginPage";
+import { DashboardPage }    from "./pages/DashboardPage";
+import { TransaksiPage }    from "./pages/TransaksiPage";
+import { KwitansiPage }     from "./pages/KwitansiPage";
+import { NotaPage }         from "./pages/NotaPage";
+import { TrashPage }        from "./pages/TrashPage";
 
 export default function App() {
-  const [page,  setPage]  = useState<Page>("login");
   const [toast, setToast] = useState("");
-  const [admin, setAdmin] = useState<Admin | null>(null);
 
   function showToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(""), 3000);
   }
 
-  function handleLogin(a: Admin) {
-    setAdmin(a);
-    setPage("dashboard");
-  }
-
-  async function handleLogout() {
-    await adminService.logout();
-    setAdmin(null);
-    setPage("login");
-  }
-
-  if (!admin || page === "login") {
-    return <LoginPage onLogin={handleLogin} />;
-  }
-
   return (
-    <AppLayout
-      currentPage={page}
-      onNavigate={setPage}
-      onLogout={handleLogout}
-      adminName={admin.username}
-      toast={toast}
-    >
-      {page === "dashboard" && (
-        <DashboardPage adminName={admin.username} onNavigate={setPage} />
-      )}
-      {page === "transaksi" && (
-        <TransaksiPage adminId={admin.id_admin} adminName={admin.username} onToast={showToast} />
-      )}
-      {page === "kwitansi" && (
-        <KwitansiPage adminId={admin.id_admin} />
-      )}
-      {page === "nota" && (
-        <NotaPage adminId={admin.id_admin} onToast={showToast} />
-      )}
-    </AppLayout>
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          {/* ── Public ── */}
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* ── Protected shell (redirects to /login when unauthenticated) ── */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayoutRoute toast={toast} />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/transaksi" element={<TransaksiPage onToast={showToast} />} />
+              <Route path="/kwitansi"  element={<KwitansiPage />} />
+              <Route path="/nota"      element={<NotaPage onToast={showToast} />} />
+              <Route path="/trash"     element={<TrashPage onToast={showToast} />} />
+            </Route>
+          </Route>
+
+          {/* ── Catch-all ── */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

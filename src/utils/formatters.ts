@@ -30,3 +30,54 @@ export const TODAY_LABEL = new Date().toLocaleDateString("id-ID", {
 
 /** Current four-digit year, used in kwitansi print preview. */
 export const CURRENT_YEAR = new Date().getFullYear();
+
+/** Format admin username to display name (e.g., "bang_karir" -> "Bang Karir") */
+export function formatAdminName(username: string | undefined): string {
+  if (!username) return "-";
+  return username
+    .split("_")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+/** Format document/nota ID to exactly 4 digits (e.g., 12 -> 0012) */
+export function formatDocumentNumber(id: number | string | undefined): string {
+  if (id === undefined || id === null) return "0000";
+  const numStr = String(id).padStart(4, "0");
+  return numStr;
+}
+
+/** 
+ * Format a string input into a Rupiah string safely without altering the underlying numeric state.
+ * Primarily used for controlled inputs.
+ */
+export function formatCurrencyInput(value: string): string {
+  // Strip non-numeric
+  const numericValue = value.replace(/\D/g, "");
+  if (!numericValue) return "";
+  // Format with thousand separators
+  return "Rp " + parseInt(numericValue, 10).toLocaleString("id-ID");
+}
+
+/** Parses a formatted currency input string back to an integer. */
+export function parseCurrencyInput(value: string): number {
+  const numericValue = value.replace(/\D/g, "");
+  if (!numericValue) return 0;
+  return parseInt(numericValue, 10);
+}
+
+/** Formats a date string (ISO or otherwise) into DD-MMM-YYYY */
+export function formatDateInput(dateString: string | undefined): string {
+  if (!dateString) return "-";
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return dateString; // fallback if invalid
+    return d.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    }).replace(/ /g, "-");
+  } catch {
+    return dateString;
+  }
+}
