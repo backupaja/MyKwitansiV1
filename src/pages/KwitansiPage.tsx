@@ -94,16 +94,16 @@ export function KwitansiPage() {
       <Card className="p-5">
         <CardToolbar
           left={
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full overflow-x-auto pb-1" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
               {/* Desktop Print Button */}
-              <div className="hidden md:block">
-                <PrimaryBtn onClick={handlePrint} disabled={selected.length === 0}>
+              <div className="hidden md:block flex-shrink-0">
+                <PrimaryBtn onClick={handlePrint} disabled={selected.length === 0} className="flex-shrink-0">
                   {Ico.print()} Print Kwitansi{selected.length > 0 ? ` (${selected.length})` : ""}
                 </PrimaryBtn>
               </div>
               {/* Mobile Print Button Disabled */}
-              <div className="block md:hidden">
-                <PrimaryBtn disabled={true} className="opacity-50 cursor-not-allowed">
+              <div className="block md:hidden flex-shrink-0">
+                <PrimaryBtn disabled={true} className="opacity-50 cursor-not-allowed flex-shrink-0">
                   {Ico.print()} Print{selected.length > 0 ? ` (${selected.length})` : ""}
                 </PrimaryBtn>
               </div>
@@ -112,7 +112,7 @@ export function KwitansiPage() {
               <PrimaryBtn 
                 onClick={handleDownloadMultiplePdf} 
                 disabled={selected.length === 0}
-                className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600"
+                className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600 flex-shrink-0"
               >
                 {Ico.download()} Save PDF{selected.length > 0 ? ` (${selected.length})` : ""}
               </PrimaryBtn>
