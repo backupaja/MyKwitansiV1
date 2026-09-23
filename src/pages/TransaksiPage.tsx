@@ -442,12 +442,14 @@ export function TransaksiPage({ onToast }: TransaksiPageProps) {
               { label: "Jumlah Uang", value: formatRp(viewTarget.jumlah_uang) },
               { label: "Total Harga", value: formatRp(viewTarget.total_harga) },
             ].map((row) => (
-              <div key={row.label} className="flex gap-4">
-                <span className="text-sm font-semibold text-gray-700 text-right flex-shrink-0" style={{ width: 150 }}>
+              <div key={row.label} className="flex flex-col md:flex-row md:items-end gap-1 md:gap-4 mb-3 md:mb-0">
+                <span 
+                  className="text-xs md:text-sm font-semibold text-gray-500 md:text-gray-700 md:text-right flex-shrink-0 md:w-[150px]"
+                >
                   {row.label}
                 </span>
-                <span className="flex-1 text-sm text-gray-800 border-b border-gray-200 pb-1">
-                  {row.value}
+                <span className="text-sm font-medium md:font-normal text-gray-900 md:text-gray-800 border-b border-gray-200 pb-1 flex-1">
+                  {row.value || "-"}
                 </span>
               </div>
             ))}
