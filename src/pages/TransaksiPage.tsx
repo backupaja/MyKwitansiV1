@@ -466,10 +466,13 @@ export function TransaksiPage({ onToast }: TransaksiPageProps) {
               </div>
               
               <div className="flex flex-col items-center w-48">
-                <span className="text-xs font-bold text-black mb-1">
+                <span className="text-xs font-bold text-black mb-16">
                   {viewTarget.kota} , {viewTarget.tanggal_transaksi}
                 </span>
-                <div className="w-full border-b border-black mb-6" />
+                <div className="w-full border-b border-black mb-1" />
+                <span className="text-xs font-bold text-black text-center truncate w-full">
+                  ({viewTarget.penerima_uang})
+                </span>
               </div>
             </div>
             </div>
