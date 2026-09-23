@@ -147,41 +147,47 @@ export function KwitansiPage() {
 
       {preview && (
         <Modal title="Detail Kwitansi" onClose={() => setPreview(null)} wide>
-          <div className="w-full">
-            <div className="p-2 relative w-full">
-              <h2 className="text-center text-base md:text-lg font-bold tracking-wide text-black mb-4 md:mb-6">KWITANSI PEMBAYARAN</h2>
+          <div className="w-full overflow-hidden flex justify-center">
+            <style>{`
+              .kwitansi-zoom { width: 550px; max-width: none; }
+              @media (max-width: 600px) { .kwitansi-zoom { zoom: 0.8; } }
+              @media (max-width: 480px) { .kwitansi-zoom { zoom: 0.65; } }
+              @media (max-width: 380px) { .kwitansi-zoom { zoom: 0.55; } }
+            `}</style>
+            <div className="kwitansi-zoom p-2 relative text-sm">
+              <h2 className="text-center text-lg font-bold tracking-wide text-black mb-6">KWITANSI PEMBAYARAN</h2>
             
-            <div className="space-y-2 md:space-y-4">
+            <div className="space-y-4">
               {[
                 { label: "No Kwitansi",      value: formatDocumentNumber(preview.id_data_transaksi) },
                 { label: "Diterima Dari",    value: preview.terima_dari },
                 { label: "Terbilang",        value: terbilang(preview.jumlah_uang) + " Rupiah" },
                 { label: "Untuk Pembayaran", value: preview.untuk_pembayaran },
               ].map((row) => (
-                <div key={row.label} className="flex gap-2 sm:gap-4 items-end">
-                  <span className="text-[10px] sm:text-sm font-bold text-black text-right flex-shrink-0 pb-1 whitespace-nowrap">
+                <div key={row.label} className="flex gap-4 items-end">
+                  <span className="text-sm font-bold text-black text-right flex-shrink-0 pb-1" style={{ width: 140 }}>
                     {row.label}
                   </span>
-                  <span className="flex-1 text-[10px] sm:text-sm font-bold text-black border-b border-black pb-1 break-words">
+                  <span className="flex-1 text-sm font-bold text-black border-b border-black pb-1">
                     {row.value}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="flex items-end justify-between mt-8 gap-2 sm:gap-4">
-              <div className="flex items-center flex-1 max-w-[120px] sm:max-w-[180px] border-y border-black py-1.5 sm:py-2">
-                <span className="text-[10px] sm:text-sm font-bold text-black mr-1 sm:mr-2">Rp</span>
-                <span className="text-[10px] sm:text-base font-bold text-black truncate">
+            <div className="flex items-end justify-between mt-8">
+              <div className="flex items-center w-48 border-y border-black py-2">
+                <span className="text-sm font-bold text-black mr-2">Rp</span>
+                <span className="text-base font-bold text-black">
                   {formatRp(preview.jumlah_uang).replace("Rp ", "")}
                 </span>
               </div>
               
-              <div className="flex flex-col items-center flex-1 max-w-[120px] sm:max-w-[180px]">
-                <span className="text-[9px] sm:text-xs font-bold text-black mb-1 text-center leading-tight">
-                  {preview.kota}, {preview.tanggal_transaksi}
+              <div className="flex flex-col items-center w-48">
+                <span className="text-xs font-bold text-black mb-1">
+                  {preview.kota} , {preview.tanggal_transaksi}
                 </span>
-                <div className="w-full border-b border-black mb-4 sm:mb-6" />
+                <div className="w-full border-b border-black mb-6" />
               </div>
             </div>
             </div>
