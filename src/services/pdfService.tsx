@@ -26,16 +26,19 @@ function sanitizeFilename(name: string): string {
 function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
+  a.style.display = "none";
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
   a.click();
   
-// Cleanup
+  // Cleanup - on mobile browsers (Android/iOS), revoking too quickly cancels the download silently.
   setTimeout(() => {
-    document.body.removeChild(a);
+    if (document.body.contains(a)) {
+      document.body.removeChild(a);
+    }
     URL.revokeObjectURL(url);
-  }, 100);
+  }, 5000);
 }
 
 /** Helper to trigger browser print of a Blob via hidden iframe */
