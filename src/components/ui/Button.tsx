@@ -19,8 +19,8 @@ export function PrimaryBtn({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-2 text-white text-sm font-semibold
-        px-4 py-2.5 rounded-lg border border-transparent
+      className={`inline-flex items-center gap-1.5 md:gap-2 text-white text-xs md:text-sm font-semibold whitespace-nowrap
+        px-3 md:px-4 py-2 md:py-2.5 rounded-lg border border-transparent
         shadow-sm transition-all duration-150 active:scale-[0.98]
         ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}
         ${className}`}
@@ -42,8 +42,8 @@ export function OutlineBtn({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center gap-2 text-sm font-semibold
-        px-4 py-2.5 rounded-lg border
+      className={`inline-flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-semibold whitespace-nowrap
+        px-3 md:px-4 py-2 md:py-2.5 rounded-lg border
         transition-all duration-150 active:scale-[0.98]
         ${disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}
         ${className}`}
