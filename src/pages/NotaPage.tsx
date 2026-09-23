@@ -434,11 +434,24 @@ export function NotaPage({ onToast }: NotaPageProps) {
             <OutlineBtn onClick={handleDownloadPdf} className="hidden md:flex">
               {Ico.download()} Download PDF
             </OutlineBtn>
+            
+            {/* Print Button: Active on Desktop, Disabled on Mobile */}
             <PrimaryBtn onClick={handlePrintNota} className="px-6 hidden md:flex">
               {Ico.print()} Print Nota
             </PrimaryBtn>
-            {/* Mobile Only: Save PDF instead of Print */}
-            <PrimaryBtn onClick={handleDownloadPdf} className="flex md:hidden">
+            <PrimaryBtn
+              className="px-6 flex md:hidden opacity-50 cursor-not-allowed"
+              disabled={true}
+              title="Gunakan Save PDF di HP"
+            >
+              {Ico.print()} Print Nota
+            </PrimaryBtn>
+            
+            {/* Mobile Only: Save PDF */}
+            <PrimaryBtn
+              onClick={handleDownloadPdf}
+              className="flex md:hidden bg-blue-600 hover:bg-blue-700"
+            >
               {Ico.download()} Save PDF
             </PrimaryBtn>
           </div>

@@ -198,6 +198,8 @@ export function KwitansiPage() {
             <OutlineBtn onClick={handleDownloadPdf} className="hidden md:flex">
               {Ico.download()} Download PDF
             </OutlineBtn>
+            
+            {/* Print Button: Active on Desktop, Disabled on Mobile */}
             <PrimaryBtn
               className="hidden md:flex"
               onClick={async () => {
@@ -207,9 +209,17 @@ export function KwitansiPage() {
             >
               {Ico.print()} Print
             </PrimaryBtn>
-            {/* Mobile Only: Save PDF instead of Print */}
             <PrimaryBtn
-              className="flex md:hidden"
+              className="flex md:hidden opacity-50 cursor-not-allowed"
+              disabled={true}
+              title="Gunakan Save PDF di HP"
+            >
+              {Ico.print()} Print
+            </PrimaryBtn>
+            
+            {/* Mobile Only: Save PDF */}
+            <PrimaryBtn
+              className="flex md:hidden bg-blue-600 hover:bg-blue-700"
               onClick={handleDownloadPdf}
             >
               {Ico.download()} Save PDF
