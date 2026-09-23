@@ -47,7 +47,7 @@ export function LoginPage() {
       >
         {/* Subtle blob accents using brand color, very low opacity */}
         <div
-          className="absolute rounded-full pointer-events-none"
+          className="absolute rounded-full pointer-events-none animate-float"
           style={{
             width: 380, height: 380,
             background: `radial-gradient(circle, ${color.brand} 0%, transparent 70%)`,
@@ -56,7 +56,7 @@ export function LoginPage() {
           }}
         />
         <div
-          className="absolute rounded-full pointer-events-none"
+          className="absolute rounded-full pointer-events-none animate-float-delayed"
           style={{
             width: 280, height: 280,
             background: `radial-gradient(circle, ${color.brand} 0%, transparent 70%)`,
@@ -74,13 +74,54 @@ export function LoginPage() {
           }}
         />
 
+        {/* Abstract Decorative Blobs */}
+        <div
+          className="absolute rounded-full pointer-events-none animate-blob"
+          style={{
+            width: 400, height: 400,
+            background: `radial-gradient(circle, #fca5a5 0%, transparent 60%)`,
+            opacity: 0.15,
+            top: "-10%", left: "-20%",
+          }}
+        />
+        <div
+          className="absolute rounded-full pointer-events-none animate-blob animation-delay-2000"
+          style={{
+            width: 300, height: 300,
+            background: `radial-gradient(circle, #fcd34d 0%, transparent 60%)`,
+            opacity: 0.1,
+            bottom: "5%", right: "-10%",
+          }}
+        />
+        <div
+          className="absolute rounded-full pointer-events-none animate-blob animation-delay-4000"
+          style={{
+            width: 250, height: 250,
+            background: `radial-gradient(circle, #fb7185 0%, transparent 60%)`,
+            opacity: 0.12,
+            top: "40%", right: "15%",
+            animationDuration: '10s'
+          }}
+        />
+        <div
+          className="absolute rounded-full pointer-events-none animate-blob"
+          style={{
+            width: 350, height: 350,
+            background: `radial-gradient(circle, #ef4444 0%, transparent 60%)`,
+            opacity: 0.1,
+            bottom: "20%", left: "5%",
+            animationDuration: '12s'
+          }}
+        />
+
         {/* Logo */}
-        <div className="relative z-10 flex items-center justify-center">
+        <div className="relative z-10 flex flex-col items-center justify-center">
           <img
             src="/logo-vertical.png"
             alt="MyKwitansi"
+            className="hover:scale-110 hover:-translate-y-2 transition-all duration-500 cursor-pointer"
             style={{
-              width: 192,
+              width: 220,
               filter: "drop-shadow(0 8px 32px rgba(0,0,0,0.5))",
             }}
           />
@@ -118,7 +159,7 @@ export function LoginPage() {
 
         {/* Form card */}
         <div
-          className="relative z-10 w-full"
+          className="relative z-10 w-full animate-fade-in-up opacity-0 transition-shadow duration-500 hover:shadow-2xl"
           style={{
             maxWidth: 360,
             background: "#fff",
@@ -127,12 +168,9 @@ export function LoginPage() {
             boxShadow: "0 4px 32px -4px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
           }}
         >
-          <h1 className="font-bold mb-1" style={{ fontSize: 24, color: "#111827" }}>
-            Selamat datang!
-          </h1>
-          <p className="text-sm mb-7" style={{ color: "#9ca3af" }}>
-            Masuk ke akun Anda untuk melanjutkan.
-          </p>
+          <div className="flex justify-center mb-8">
+            <img src="/logo-horizontal.png" alt="MyKwitansi" className="h-12 w-auto" />
+          </div>
 
           {/* Error */}
           {error && (

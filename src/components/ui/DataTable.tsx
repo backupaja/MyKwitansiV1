@@ -1,5 +1,52 @@
+import React, { useState, useRef, useEffect } from "react";
 import { tokens } from "../../styles/tokens";
 import { Ico } from "../../utils/icons";
+
+// ── Custom Dropdown for Page Size ─────────────────────────────────────────
+
+function CustomSelect({ value, onChange, options }: { value: number; onChange: (val: number) => void; options: { label: string, value: number }[] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selectedLabel = options.find(o => o.value === value)?.label || value;
+
+  return (
+    <div className="relative" ref={ref}>
+      <button 
+        type="button" 
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 text-sm bg-white text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-brandSoft"
+      >
+        {selectedLabel}
+        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 w-24 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden py-1 animate-fade-in-up">
+          {options.map(o => (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => { onChange(o.value); setOpen(false); }}
+              className={`w-full text-left px-3 py-2 text-sm transition-colors ${o.value === value ? "bg-[#fef2f2] text-[#7b1113] font-bold" : "text-gray-700 hover:bg-gray-50"}`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const { color } = tokens;
 
@@ -7,7 +54,7 @@ const { color } = tokens;
 
 export function Th({ children, align = "left" }: { children: React.ReactNode; align?: "left" | "right" | "center" }) {
   return (
-    <th className={`px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap ${
+    <th className={`px-2 py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap ${
       align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"
     }`}>
       {children} {align === "left" && children ? Ico.sort() : null}
@@ -30,7 +77,7 @@ export function Td({
 }) {
   return (
     <td
-      className={`px-4 py-3.5 text-sm whitespace-nowrap
+      className={`px-2 py-2 text-[12px] whitespace-nowrap
         ${accent ? "font-semibold" : "font-normal text-gray-700"}
         ${mono ? "tabular-nums" : ""}`}
       style={accent ? { color: color.brand } : undefined}
@@ -59,15 +106,18 @@ export function TableControls({
     <>
       <div className="flex items-center gap-2 text-sm text-gray-500">
         <span>Tampilkan</span>
-        <select
-          value={pageSize ?? 10}
-          onChange={(e) => onPageSize?.(Number(e.target.value))}
-          className="border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white text-gray-700 font-medium"
-        >
-          <option value={10}>10</option>
-          <option value={25}>25</option>
-          <option value={50}>50</option>
-        </select>
+        <CustomSelect 
+          value={pageSize ?? 10} 
+          onChange={(val) => onPageSize?.(val)}
+          options={[
+            { label: "10", value: 10 },
+            { label: "25", value: 25 },
+            { label: "50", value: 50 },
+            { label: "100", value: 100 },
+            { label: "500", value: 500 },
+            { label: "Semua", value: 999999 },
+          ]}
+        />
         <span>data</span>
       </div>
       <div className="relative">
@@ -173,7 +223,7 @@ export function DataTable({
 }) {
   return (
     <>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto pb-4">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100">

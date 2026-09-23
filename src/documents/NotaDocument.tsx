@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
   },
   notaContainer: {
     padding: 20,
-    minHeight: "45%", // approximately 2 notas per A4 page
+    minHeight: "31.5%", // Exactly 3 notas per A4 page
     borderBottomWidth: 1,
     borderBottomColor: "#cccccc",
     borderBottomStyle: "dashed",
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   totalValue: {
     fontFamily: "Helvetica-Bold",
     fontSize: 12,
-    color: "#7b1113",
+    color: "#111827",
   }
 });
 
@@ -171,13 +171,21 @@ export function NotaDocument({ data }: Props) {
 }
 
 export function MultiNotaDocument({ items }: { items: DataNotaView[] }) {
+  // Chunk items into arrays of max 3 items
+  const chunks = [];
+  for (let i = 0; i < items.length; i += 3) {
+    chunks.push(items.slice(i, i + 3));
+  }
+
   return (
     <Document>
-      <Page size="A4" orientation="portrait" style={styles.page}>
-        {items.map((data) => (
-          <NotaBlock key={data.id_data_nota} data={data} />
-        ))}
-      </Page>
+      {chunks.map((chunk, pageIndex) => (
+        <Page key={pageIndex} size="A4" orientation="portrait" style={styles.page}>
+          {chunk.map((data) => (
+            <NotaBlock key={data.id_data_nota} data={data} />
+          ))}
+        </Page>
+      ))}
     </Document>
   );
 }

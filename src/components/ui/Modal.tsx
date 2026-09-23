@@ -16,22 +16,23 @@ export function Modal({
       style={{ background: "rgba(0,0,0,0.45)" }}
     >
       <div
-        className={`bg-white rounded-2xl shadow-2xl w-full modal-enter
+        className={`bg-white rounded-2xl shadow-2xl w-full modal-enter flex flex-col
           ${wide ? "max-w-2xl" : "max-w-lg"}`}
+        style={{ maxHeight: "90vh" }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div className="flex-shrink-0 flex items-center justify-between px-5 py-3 border-b border-gray-100">
           <h2 className="text-base font-bold text-gray-900">{title}</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-lg leading-none
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-lg leading-none
               text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
           >
             ×
           </button>
         </div>
         {/* Body */}
-        <div className="px-6 py-5">{children}</div>
+        <div className="px-5 py-4 overflow-y-auto">{children}</div>
       </div>
     </div>
   );

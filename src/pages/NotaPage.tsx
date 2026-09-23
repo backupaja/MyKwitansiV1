@@ -10,7 +10,7 @@ import { useState, useEffect } from "react";
 import { tokens } from "../styles/tokens";
 
 import { Ico } from "../utils/icons";
-import { formatRp, formatAdminName, formatDocumentNumber, formatCurrencyInput, formatDateInput } from "../utils/formatters";
+import { formatRp, formatAdminName, formatDocumentNumber, formatCurrencyInput, parseCurrencyInput, formatDateInput } from "../utils/formatters";
 import {
   PageHeader, Card, PrimaryBtn, OutlineBtn, Modal, FormField,
   CardToolbar, TableControls, DataTable, Td,
@@ -336,33 +336,33 @@ export function NotaPage({ onToast }: NotaPageProps) {
                   <button
                     onClick={() => setViewTarget(n)}
                     title="Lihat Nota"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold
+                    className="inline-flex items-center justify-center p-1.5 rounded-md text-xs font-semibold
                       border transition-colors duration-100"
                     style={{ color: "#374151", borderColor: "#e5e7eb", background: "transparent" }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = "#f3f4f6"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                   >
-                    {Ico.receipt()} Detail
+                    {Ico.receipt()}
                   </button>
                   <button
                     onClick={() => openEdit(n)}
                     title="Edit Nota"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold
+                    className="inline-flex items-center justify-center p-1.5 rounded-md text-xs font-semibold
                       border transition-colors duration-100"
                     style={{ color: color.brand, borderColor: color.brand, background: "transparent" }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = color.brandSoft; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                   >
-                    {Ico.edit()} Edit
+                    {Ico.edit()}
                   </button>
                   <button
                     onClick={() => setDeleteTarget(n)}
                     title="Hapus Nota"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold
+                    className="inline-flex items-center justify-center p-1.5 rounded-md text-xs font-semibold
                       border border-red-200 text-red-600 bg-transparent transition-colors duration-100
                       hover:bg-red-50"
                   >
-                    {Ico.trash()} Hapus
+                    {Ico.trash()}
                   </button>
                 </div>
               </td>
@@ -504,10 +504,11 @@ export function NotaPage({ onToast }: NotaPageProps) {
                     </td>
                     <td className="px-2 py-2">
                       <input
-                        type="number"
+                        type="text"
                         className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded-md outline-none"
-                        value={it.harga || ""}
-                        onChange={(e) => updateFormItem(idx, "harga", e.target.value === "" ? 0 : Number(e.target.value))}
+                        value={it.harga === 0 ? "" : formatCurrencyInput(String(it.harga))}
+                        onChange={(e) => updateFormItem(idx, "harga", parseCurrencyInput(e.target.value))}
+                        placeholder="Rp 0"
                       />
                     </td>
                     <td className="px-3 py-2 text-right font-medium tabular-nums text-gray-700">

@@ -260,33 +260,33 @@ export function TransaksiPage({ onToast }: TransaksiPageProps) {
                   <button
                     onClick={() => setViewTarget(t)}
                     title="Lihat transaksi"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold
+                    className="inline-flex items-center justify-center p-1.5 rounded-md text-xs font-semibold
                       border transition-colors duration-100"
                     style={{ color: "#374151", borderColor: "#e5e7eb", background: "transparent" }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = "#f3f4f6"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                   >
-                    {Ico.receipt()} View
+                    {Ico.receipt()}
                   </button>
                   <button
                     onClick={() => openEdit(t)}
                     title="Edit transaksi"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold
+                    className="inline-flex items-center justify-center p-1.5 rounded-md text-xs font-semibold
                       border transition-colors duration-100"
                     style={{ color: color.brand, borderColor: color.brand, background: "transparent" }}
                     onMouseEnter={(e) => { e.currentTarget.style.background = color.brandSoft; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                   >
-                    {Ico.edit()} Edit
+                    {Ico.edit()}
                   </button>
                   <button
                     onClick={() => setDeleteTarget(t)}
                     title="Hapus transaksi"
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold
+                    className="inline-flex items-center justify-center p-1.5 rounded-md text-xs font-semibold
                       border border-red-200 text-red-600 bg-transparent transition-colors duration-100
                       hover:bg-red-50"
                   >
-                    {Ico.trash()} Hapus
+                    {Ico.trash()}
                   </button>
                 </div>
               </td>
@@ -308,54 +308,57 @@ export function TransaksiPage({ onToast }: TransaksiPageProps) {
         <Modal
           title={formMode === "create" ? "Tambah Transaksi" : "Edit Transaksi"}
           onClose={closeForm}
+          wide
         >
-          <FormField
-            label="Tanggal Transaksi"
-            type="date"
-            value={form.tanggal_transaksi}
-            onChange={(v) => setField("tanggal_transaksi", v)}
-            error={errors.tanggal_transaksi}
-          />
-          <FormField
-            label="Terima Dari"
-            type="text"
-            value={form.terima_dari}
-            onChange={(v) => setField("terima_dari", v)}
-            placeholder="Nama instansi / perorangan"
-            error={errors.terima_dari}
-          />
-          <FormField
-            label="Jumlah Uang (Rp)"
-            type="text"
-            value={formatCurrencyInput(String(form.jumlah_uang))}
-            onChange={(v) => setField("jumlah_uang", parseCurrencyInput(v))}
-            placeholder="Rp 0"
-            error={errors.jumlah_uang}
-          />
-          <FormField
-            label="Untuk Pembayaran"
-            type="text"
-            value={form.untuk_pembayaran}
-            onChange={(v) => setField("untuk_pembayaran", v)}
-            placeholder="Keterangan pembayaran"
-            error={errors.untuk_pembayaran}
-          />
-          <FormField
-            label="Penerima Uang"
-            type="text"
-            value={form.penerima_uang}
-            onChange={(v) => setField("penerima_uang", v)}
-            placeholder="Nama penerima"
-            error={errors.penerima_uang}
-          />
-          <FormField
-            label="Kota"
-            type="text"
-            value={form.kota}
-            onChange={(v) => setField("kota", v)}
-            placeholder="Jakarta"
-            error={errors.kota}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+            <FormField
+              label="Tanggal Transaksi"
+              type="date"
+              value={form.tanggal_transaksi}
+              onChange={(v) => setField("tanggal_transaksi", v)}
+              error={errors.tanggal_transaksi}
+            />
+            <FormField
+              label="Terima Dari"
+              type="text"
+              value={form.terima_dari}
+              onChange={(v) => setField("terima_dari", v)}
+              placeholder="Nama instansi / perorangan"
+              error={errors.terima_dari}
+            />
+            <FormField
+              label="Jumlah Uang (Rp)"
+              type="text"
+              value={formatCurrencyInput(String(form.jumlah_uang))}
+              onChange={(v) => setField("jumlah_uang", parseCurrencyInput(v))}
+              placeholder="Rp 0"
+              error={errors.jumlah_uang}
+            />
+            <FormField
+              label="Untuk Pembayaran"
+              type="text"
+              value={form.untuk_pembayaran}
+              onChange={(v) => setField("untuk_pembayaran", v)}
+              placeholder="Keterangan pembayaran"
+              error={errors.untuk_pembayaran}
+            />
+            <FormField
+              label="Penerima Uang"
+              type="text"
+              value={form.penerima_uang}
+              onChange={(v) => setField("penerima_uang", v)}
+              placeholder="Nama penerima"
+              error={errors.penerima_uang}
+            />
+            <FormField
+              label="Kota"
+              type="text"
+              value={form.kota}
+              onChange={(v) => setField("kota", v)}
+              placeholder="Jakarta"
+              error={errors.kota}
+            />
+          </div>
 
           <div className="flex gap-2 mt-5">
             <PrimaryBtn

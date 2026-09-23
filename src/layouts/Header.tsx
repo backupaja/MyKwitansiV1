@@ -22,7 +22,7 @@ export function Header() {
   }
 
   return (
-    <header className="h-14 flex items-center justify-end px-6 gap-3 bg-white border-b border-gray-100 flex-shrink-0">
+    <header className="h-[72px] flex items-center justify-end px-6 gap-3 bg-white border-b border-gray-100 flex-shrink-0">
       {/* Notification bell */}
       <button
         className="relative w-9 h-9 flex items-center justify-center rounded-lg text-gray-400
