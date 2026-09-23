@@ -84,6 +84,8 @@ input[type="checkbox"] {
 }
 .animation-delay-4000 {
   animation-delay: 4s;
+}
+
 @keyframes printPaper {
   0% { transform: translateY(40px); opacity: 0; }
   10% { transform: translateY(40px); opacity: 1; }
