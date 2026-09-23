@@ -398,7 +398,7 @@ export function NotaPage({ onToast }: NotaPageProps) {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[500px] text-sm">
               <thead>
                 <tr className="border-y border-gray-900">
                   <th className="px-4 py-2 text-center font-bold text-gray-900">Jumlah Item</th>
@@ -461,8 +461,8 @@ export function NotaPage({ onToast }: NotaPageProps) {
             </OutlineBtn>
           </div>
 
-          <div className="border border-gray-200 rounded-xl overflow-hidden bg-white mb-4">
-            <table className="w-full text-sm">
+          <div className="border border-gray-200 rounded-xl overflow-x-auto bg-white mb-4">
+            <table className="w-full min-w-[700px] text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-3 py-2.5 text-left font-semibold text-gray-600 text-xs uppercase w-10">#</th>

@@ -120,7 +120,7 @@ export function TableControls({
         />
         <span>data</span>
       </div>
-      <div className="relative">
+      <div className="relative w-full sm:w-auto flex-1">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
           {Ico.search()}
         </span>
@@ -128,7 +128,7 @@ export function TableControls({
           value={search}
           onChange={(e) => onSearch(e.target.value)}
           placeholder="Cari…"
-          className="border border-gray-200 rounded-lg pl-9 pr-3 py-1.5 text-sm w-48 bg-white text-gray-700"
+          className="border border-gray-200 rounded-lg pl-9 pr-3 py-1.5 text-sm w-full sm:w-48 bg-white text-gray-700"
         />
       </div>
     </>
@@ -146,8 +146,8 @@ export function CardToolbar({
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-gray-50">
-      <div className="flex items-center gap-2">{left}</div>
-      {right && <div className="flex items-center gap-2">{right}</div>}
+      <div className="flex flex-wrap items-center gap-2">{left}</div>
+      {right && <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">{right}</div>}
     </div>
   );
 }

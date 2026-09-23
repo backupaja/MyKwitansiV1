@@ -147,8 +147,9 @@ export function KwitansiPage() {
 
       {preview && (
         <Modal title="Detail Kwitansi" onClose={() => setPreview(null)} wide>
-          <div className="p-2 relative">
-            <h2 className="text-center text-lg font-bold tracking-wide text-black mb-6">KWITANSI PEMBAYARAN</h2>
+          <div className="overflow-x-auto">
+            <div className="p-2 relative min-w-[500px]">
+              <h2 className="text-center text-lg font-bold tracking-wide text-black mb-6">KWITANSI PEMBAYARAN</h2>
             
             <div className="space-y-4">
               {[
@@ -186,6 +187,7 @@ export function KwitansiPage() {
                 <div className="w-full border-b border-black mb-6" />
                 <div className="h-8" />
               </div>
+            </div>
             </div>
           </div>
             

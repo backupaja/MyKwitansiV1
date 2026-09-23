@@ -154,7 +154,7 @@ export function LoginPage() {
 
         {/* Mobile logo */}
         <div className="absolute top-8 left-1/2 -translate-x-1/2 lg:hidden">
-          <img src="/src/assets/logo-vertical.png" alt="MyKwitansi" className="h-16 w-auto" />
+          <img src="/logo-vertical.png" alt="MyKwitansi" className="h-16 w-auto" />
         </div>
 
         {/* Form card */}
