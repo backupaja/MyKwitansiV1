@@ -229,27 +229,12 @@ export function KwitansiPage() {
               </OutlineBtn>
             </div>
             
-            {/* Print Button: Active on Desktop, Disabled on Mobile */}
-            <div className="hidden md:block">
-              <PrimaryBtn
-                onClick={async () => {
-                  await printService.printKwitansi(preview, adminId);
-                  setPreview(null);
-                }}
-              >
-                {Ico.print()} Print
-              </PrimaryBtn>
-            </div>
-            
-            {/* Mobile Only: Save PDF */}
-            <div className="block md:hidden">
-              <PrimaryBtn
-                className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600"
-                onClick={handleDownloadPdf}
-              >
-                {Ico.download()} Save PDF
-              </PrimaryBtn>
-            </div>
+            <PrimaryBtn
+              onClick={handleDownloadPdf}
+              className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600 px-6"
+            >
+              {Ico.download()} Save PDF
+            </PrimaryBtn>
           </div>
         </Modal>
       )}

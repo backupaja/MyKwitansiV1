@@ -458,22 +458,12 @@ export function NotaPage({ onToast }: NotaPageProps) {
               </OutlineBtn>
             </div>
             
-            {/* Print Button: Active on Desktop only */}
-            <div className="hidden md:block">
-              <PrimaryBtn onClick={handlePrintNota} className="px-6">
-                {Ico.print()} Print Nota
-              </PrimaryBtn>
-            </div>
-            
-            {/* Mobile Only: Save PDF */}
-            <div className="block md:hidden">
-              <PrimaryBtn
-                onClick={handleDownloadPdf}
-                className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600"
-              >
-                {Ico.download()} Save PDF
-              </PrimaryBtn>
-            </div>
+            <PrimaryBtn
+              onClick={handleDownloadPdf}
+              className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600 px-6"
+            >
+              {Ico.download()} Save PDF
+            </PrimaryBtn>
           </div>
         </Modal>
       )}

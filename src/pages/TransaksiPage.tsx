@@ -486,27 +486,12 @@ export function TransaksiPage({ onToast }: TransaksiPageProps) {
               </OutlineBtn>
             </div>
             
-            {/* Print Button: Active on Desktop only */}
-            <div className="hidden md:block">
-              <PrimaryBtn
-                onClick={async () => {
-                  await printService.printKwitansi(viewTarget, auth.user!.id);
-                  setViewTarget(null);
-                }}
-              >
-                {Ico.print()} Print
-              </PrimaryBtn>
-            </div>
-            
-            {/* Mobile Only: Save PDF */}
-            <div className="block md:hidden">
-              <PrimaryBtn
-                className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600"
-                onClick={() => pdfService.downloadKwitansiPdf(viewTarget)}
-              >
-                {Ico.download()} Save PDF
-              </PrimaryBtn>
-            </div>
+            <PrimaryBtn
+              className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600 px-6"
+              onClick={() => pdfService.downloadKwitansiPdf(viewTarget)}
+            >
+              {Ico.download()} Save PDF
+            </PrimaryBtn>
           </div>
         </Modal>
       )}
