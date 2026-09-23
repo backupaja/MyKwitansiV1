@@ -458,18 +458,9 @@ export function NotaPage({ onToast }: NotaPageProps) {
               </OutlineBtn>
             </div>
             
-            {/* Print Button: Active on Desktop, Disabled on Mobile */}
+            {/* Print Button: Active on Desktop only */}
             <div className="hidden md:block">
               <PrimaryBtn onClick={handlePrintNota} className="px-6">
-                {Ico.print()} Print Nota
-              </PrimaryBtn>
-            </div>
-            <div className="block md:hidden">
-              <PrimaryBtn
-                className="px-6 opacity-50 cursor-not-allowed"
-                disabled={true}
-                title="Gunakan Save PDF di HP"
-              >
                 {Ico.print()} Print Nota
               </PrimaryBtn>
             </div>

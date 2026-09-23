@@ -486,23 +486,13 @@ export function TransaksiPage({ onToast }: TransaksiPageProps) {
               </OutlineBtn>
             </div>
             
-            {/* Print Button: Active on Desktop, Disabled on Mobile */}
+            {/* Print Button: Active on Desktop only */}
             <div className="hidden md:block">
               <PrimaryBtn
                 onClick={async () => {
                   await printService.printKwitansi(viewTarget, auth.user!.id);
                   setViewTarget(null);
                 }}
-              >
-                {Ico.print()} Print
-              </PrimaryBtn>
-            </div>
-            
-            <div className="block md:hidden">
-              <PrimaryBtn
-                className="opacity-50 cursor-not-allowed"
-                disabled={true}
-                title="Gunakan Save PDF di HP"
               >
                 {Ico.print()} Print
               </PrimaryBtn>

@@ -241,16 +241,6 @@ export function KwitansiPage() {
               </PrimaryBtn>
             </div>
             
-            <div className="block md:hidden">
-              <PrimaryBtn
-                className="opacity-50 cursor-not-allowed"
-                disabled={true}
-                title="Gunakan Save PDF di HP"
-              >
-                {Ico.print()} Print
-              </PrimaryBtn>
-            </div>
-            
             {/* Mobile Only: Save PDF */}
             <div className="block md:hidden">
               <PrimaryBtn
