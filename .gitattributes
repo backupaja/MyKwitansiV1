@@ -144,3 +144,8 @@
 *.stl                filter=lfs diff=lfs merge=lfs -text
 *.nc                 filter=lfs diff=lfs merge=lfs -text
 *.mat                filter=lfs diff=lfs merge=lfs -text
+
+# MyKwitansi web assets - keep these PNG files as regular Git files
+public/logo-vertical.png -filter -diff -merge
+public/logo-horizontal.png -filter -diff -merge
+public/favicon.png -filter -diff -merge
