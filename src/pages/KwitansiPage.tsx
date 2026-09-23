@@ -195,16 +195,24 @@ export function KwitansiPage() {
             <OutlineBtn onClick={() => setPreview(null)}>
               Tutup
             </OutlineBtn>
-            <OutlineBtn onClick={handleDownloadPdf}>
+            <OutlineBtn onClick={handleDownloadPdf} className="hidden md:flex">
               {Ico.download()} Download PDF
             </OutlineBtn>
             <PrimaryBtn
+              className="hidden md:flex"
               onClick={async () => {
                 await printService.printKwitansi(preview, adminId);
                 setPreview(null);
               }}
             >
               {Ico.print()} Print
+            </PrimaryBtn>
+            {/* Mobile Only: Save PDF instead of Print */}
+            <PrimaryBtn
+              className="flex md:hidden"
+              onClick={handleDownloadPdf}
+            >
+              {Ico.download()} Save PDF
             </PrimaryBtn>
           </div>
         </Modal>

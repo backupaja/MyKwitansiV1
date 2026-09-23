@@ -430,10 +430,17 @@ export function NotaPage({ onToast }: NotaPageProps) {
           </div>
           
           <div className="mt-6 flex justify-end gap-3">
-            <OutlineBtn onClick={handleDownloadPdf}>
+            <OutlineBtn onClick={() => setViewTarget(null)}>Tutup</OutlineBtn>
+            <OutlineBtn onClick={handleDownloadPdf} className="hidden md:flex">
               {Ico.download()} Download PDF
             </OutlineBtn>
-            <PrimaryBtn onClick={handlePrintNota} className="px-6">{Ico.print()} Print Nota</PrimaryBtn>
+            <PrimaryBtn onClick={handlePrintNota} className="px-6 hidden md:flex">
+              {Ico.print()} Print Nota
+            </PrimaryBtn>
+            {/* Mobile Only: Save PDF instead of Print */}
+            <PrimaryBtn onClick={handleDownloadPdf} className="flex md:hidden">
+              {Ico.download()} Save PDF
+            </PrimaryBtn>
           </div>
         </Modal>
       )}
