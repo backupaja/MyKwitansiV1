@@ -25,6 +25,79 @@ function sanitizeFilename(name: string): string {
 /** Helper to trigger browser download of a Blob */
 function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  if (isMobile) {
+    // Bypassing mobile browser async-click blockers using a synchronous click overlay
+    const overlay = document.createElement("div");
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.backgroundColor = "rgba(0,0,0,0.75)";
+    overlay.style.zIndex = "999999";
+    overlay.style.display = "flex";
+    overlay.style.flexDirection = "column";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+    overlay.style.padding = "1rem";
+    
+    const box = document.createElement("div");
+    box.style.backgroundColor = "white";
+    box.style.padding = "2rem";
+    box.style.borderRadius = "1rem";
+    box.style.textAlign = "center";
+    box.style.width = "100%";
+    box.style.maxWidth = "320px";
+    
+    const title = document.createElement("h3");
+    title.innerText = "PDF Siap Disimpan!";
+    title.style.marginBottom = "1.5rem";
+    title.style.fontWeight = "bold";
+    title.style.color = "#111827";
+    title.style.fontSize = "1.125rem";
+    
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.innerText = "Download PDF";
+    a.style.display = "block";
+    a.style.backgroundColor = "#7b1113"; // brand color
+    a.style.color = "white";
+    a.style.padding = "0.75rem 1.5rem";
+    a.style.borderRadius = "0.5rem";
+    a.style.fontWeight = "bold";
+    a.style.textDecoration = "none";
+    a.style.marginBottom = "1rem";
+    
+    a.onclick = () => {
+      setTimeout(() => {
+        if (document.body.contains(overlay)) document.body.removeChild(overlay);
+        URL.revokeObjectURL(url);
+      }, 1000);
+    };
+    
+    const cancel = document.createElement("button");
+    cancel.innerText = "Batal";
+    cancel.style.display = "block";
+    cancel.style.width = "100%";
+    cancel.style.padding = "0.5rem";
+    cancel.style.color = "#6b7280";
+    cancel.style.fontWeight = "600";
+    cancel.style.background = "transparent";
+    cancel.style.border = "none";
+    cancel.onclick = () => {
+      if (document.body.contains(overlay)) document.body.removeChild(overlay);
+      URL.revokeObjectURL(url);
+    };
+    
+    box.appendChild(title);
+    box.appendChild(a);
+    box.appendChild(cancel);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    return;
+  }
+
+  // Desktop standard programmatic download
   const a = document.createElement("a");
   a.style.display = "none";
   a.href = url;
@@ -32,7 +105,7 @@ function triggerDownload(blob: Blob, filename: string) {
   document.body.appendChild(a);
   a.click();
   
-  // Cleanup - on mobile browsers (Android/iOS), revoking too quickly cancels the download silently.
+  // Cleanup
   setTimeout(() => {
     if (document.body.contains(a)) {
       document.body.removeChild(a);
