@@ -440,32 +440,30 @@ export function TransaksiPage({ onToast }: TransaksiPageProps) {
                 { label: "Terbilang",        value: terbilang(viewTarget.jumlah_uang) + " Rupiah" },
                 { label: "Untuk Pembayaran", value: viewTarget.untuk_pembayaran },
               ].map((row) => (
-                <div key={row.label} className="flex gap-2 md:gap-4 items-end">
-                  <span
-                    className="text-[10px] leading-tight md:text-sm font-bold text-black text-right flex-shrink-0 pb-1 w-[80px] md:w-[140px]"
-                  >
+                <div key={row.label} className="flex gap-2 sm:gap-4 items-end">
+                  <span className="text-[10px] sm:text-sm font-bold text-black text-right flex-shrink-0 pb-1 whitespace-nowrap">
                     {row.label}
                   </span>
-                  <span className="flex-1 text-xs md:text-sm font-bold text-black border-b border-black pb-1 break-words">
+                  <span className="flex-1 text-[10px] sm:text-sm font-bold text-black border-b border-black pb-1 break-words">
                     {row.value}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="flex items-end justify-between mt-6 gap-2">
-              <div className="flex items-center w-[130px] md:w-48 border-y border-black py-1.5 md:py-2">
-                <span className="text-xs md:text-sm font-bold text-black mr-1 md:mr-2">Rp</span>
-                <span className="text-sm md:text-base font-bold text-black">
+            <div className="flex items-end justify-between mt-8 gap-2 sm:gap-4">
+              <div className="flex items-center flex-1 max-w-[120px] sm:max-w-[180px] border-y border-black py-1.5 sm:py-2">
+                <span className="text-[10px] sm:text-sm font-bold text-black mr-1 sm:mr-2">Rp</span>
+                <span className="text-[10px] sm:text-base font-bold text-black truncate">
                   {formatRp(viewTarget.jumlah_uang).replace("Rp ", "")}
                 </span>
               </div>
               
-              <div className="flex flex-col items-center w-[130px] md:w-48">
-                <span className="text-[10px] md:text-xs font-bold text-black mb-1 text-center">
+              <div className="flex flex-col items-center flex-1 max-w-[120px] sm:max-w-[180px]">
+                <span className="text-[9px] sm:text-xs font-bold text-black mb-1 text-center leading-tight">
                   {viewTarget.kota}, {viewTarget.tanggal_transaksi}
                 </span>
-                <div className="w-full border-b border-black mb-4 md:mb-6" />
+                <div className="w-full border-b border-black mb-4 sm:mb-6" />
               </div>
             </div>
             </div>
