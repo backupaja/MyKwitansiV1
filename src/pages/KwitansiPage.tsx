@@ -160,31 +160,30 @@ export function KwitansiPage() {
               ].map((row) => (
                 <div key={row.label} className="flex gap-2 md:gap-4 items-end">
                   <span
-                    className="text-xs md:text-sm font-bold text-black text-right flex-shrink-0 pb-1 w-[80px] md:w-[140px]"
+                    className="text-[10px] leading-tight md:text-sm font-bold text-black text-right flex-shrink-0 pb-1 w-[80px] md:w-[140px]"
                   >
                     {row.label}
                   </span>
-                  <span className="flex-1 text-sm font-bold text-black border-b border-black pb-1">
+                  <span className="flex-1 text-xs md:text-sm font-bold text-black border-b border-black pb-1 break-words">
                     {row.value}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div className="flex items-end justify-between mt-8">
-              <div className="flex items-center w-48 border-y border-black py-2">
-                <span className="text-sm font-bold text-black mr-2">Rp</span>
-                <span className="text-base font-bold text-black">
+            <div className="flex items-end justify-between mt-6 gap-2">
+              <div className="flex items-center w-[130px] md:w-48 border-y border-black py-1.5 md:py-2">
+                <span className="text-xs md:text-sm font-bold text-black mr-1 md:mr-2">Rp</span>
+                <span className="text-sm md:text-base font-bold text-black">
                   {formatRp(preview.jumlah_uang).replace("Rp ", "")}
                 </span>
               </div>
               
-              <div className="flex flex-col items-center w-48">
-                <span className="text-xs font-bold text-black mb-1">
-                  {preview.kota} , {preview.tanggal_transaksi}
+              <div className="flex flex-col items-center w-[130px] md:w-48">
+                <span className="text-[10px] md:text-xs font-bold text-black mb-1 text-center">
+                  {preview.kota}, {preview.tanggal_transaksi}
                 </span>
-                <div className="w-full border-b border-black mb-6" />
-                <div className="h-8" />
+                <div className="w-full border-b border-black mb-4 md:mb-6" />
               </div>
             </div>
             </div>
