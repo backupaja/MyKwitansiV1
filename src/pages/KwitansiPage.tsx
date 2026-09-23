@@ -147,21 +147,20 @@ export function KwitansiPage() {
 
       {preview && (
         <Modal title="Detail Kwitansi" onClose={() => setPreview(null)} wide>
-          <div className="overflow-x-auto">
-            <div className="p-2 relative min-w-[500px]">
-              <h2 className="text-center text-lg font-bold tracking-wide text-black mb-6">KWITANSI PEMBAYARAN</h2>
+          <div className="w-full">
+            <div className="p-2 relative w-full">
+              <h2 className="text-center text-base md:text-lg font-bold tracking-wide text-black mb-4 md:mb-6">KWITANSI PEMBAYARAN</h2>
             
-            <div className="space-y-4">
+            <div className="space-y-2 md:space-y-4">
               {[
                 { label: "No Kwitansi",      value: formatDocumentNumber(preview.id_data_transaksi) },
                 { label: "Diterima Dari",    value: preview.terima_dari },
                 { label: "Terbilang",        value: terbilang(preview.jumlah_uang) + " Rupiah" },
                 { label: "Untuk Pembayaran", value: preview.untuk_pembayaran },
               ].map((row) => (
-                <div key={row.label} className="flex gap-4 items-end">
+                <div key={row.label} className="flex gap-2 md:gap-4 items-end">
                   <span
-                    className="text-sm font-bold text-black text-right flex-shrink-0 pb-1"
-                    style={{ width: 140 }}
+                    className="text-xs md:text-sm font-bold text-black text-right flex-shrink-0 pb-1 w-[80px] md:w-[140px]"
                   >
                     {row.label}
                   </span>

@@ -397,25 +397,25 @@ export function NotaPage({ onToast }: NotaPageProps) {
              </div>
           </div>
 
-          <div className="overflow-x-auto w-full">
-            <table className="w-max min-w-full text-sm">
+          <div className="w-full">
+            <table className="w-full text-[10px] sm:text-xs md:text-sm">
               <thead>
                 <tr className="border-y border-gray-900">
-                  <th className="px-4 py-2 text-center font-bold text-gray-900 whitespace-nowrap">Jumlah Item</th>
-                  <th className="px-4 py-2 text-center font-bold text-gray-900 whitespace-nowrap">Satuan</th>
-                  <th className="px-4 py-2 text-center font-bold text-gray-900 whitespace-nowrap">Nama Barang</th>
-                  <th className="px-4 py-2 text-center font-bold text-gray-900 whitespace-nowrap">Harga</th>
-                  <th className="px-4 py-2 text-center font-bold text-gray-900 whitespace-nowrap">Sub Total Harga</th>
+                  <th className="px-1 md:px-4 py-1 md:py-2 text-center font-bold text-gray-900 leading-tight">Jumlah</th>
+                  <th className="px-1 md:px-4 py-1 md:py-2 text-center font-bold text-gray-900 leading-tight">Satuan</th>
+                  <th className="px-1 md:px-4 py-1 md:py-2 text-center font-bold text-gray-900 leading-tight">Nama Barang</th>
+                  <th className="px-1 md:px-4 py-1 md:py-2 text-center font-bold text-gray-900 leading-tight">Harga</th>
+                  <th className="px-1 md:px-4 py-1 md:py-2 text-center font-bold text-gray-900 leading-tight">Sub Total</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {viewTarget.items.map((it) => (
                   <tr key={it.id_item_nota}>
-                    <td className="px-4 py-2.5 text-center font-semibold whitespace-nowrap">{it.jumlah_item}</td>
-                    <td className="px-4 py-2.5 text-center font-semibold whitespace-nowrap">{it.satuan}</td>
-                    <td className="px-4 py-2.5 text-center font-semibold whitespace-nowrap">{it.nama_barang}</td>
-                    <td className="px-4 py-2.5 text-center font-semibold tabular-nums whitespace-nowrap">{formatRp(it.harga)}</td>
-                    <td className="px-4 py-2.5 text-center font-semibold tabular-nums whitespace-nowrap">{formatRp(it.sub_total_harga)}</td>
+                    <td className="px-1 md:px-4 py-1.5 md:py-2.5 text-center font-semibold">{it.jumlah_item}</td>
+                    <td className="px-1 md:px-4 py-1.5 md:py-2.5 text-center font-semibold">{it.satuan}</td>
+                    <td className="px-1 md:px-4 py-1.5 md:py-2.5 text-center font-semibold max-w-[80px] md:max-w-none truncate">{it.nama_barang}</td>
+                    <td className="px-1 md:px-4 py-1.5 md:py-2.5 text-center font-semibold tabular-nums">{formatRp(it.harga).replace('Rp', '')}</td>
+                    <td className="px-1 md:px-4 py-1.5 md:py-2.5 text-center font-semibold tabular-nums">{formatRp(it.sub_total_harga).replace('Rp', '')}</td>
                   </tr>
                 ))}
               </tbody>
