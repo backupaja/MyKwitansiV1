@@ -266,6 +266,11 @@ export function NotaPage({ onToast }: NotaPageProps) {
     await pdfService.downloadNotaPdf(viewTarget);
   }
 
+  async function handleDownloadMultiplePdf() {
+    if (selected.length === 0) return;
+    await pdfService.downloadMultipleNotaPdf(selected);
+  }
+
   // ─── Render Helpers ──────────────────────────────────────────────────────────
 
   const formTotalHarga = formItems.reduce((sum, it) => sum + (it.harga * it.jumlah_item), 0);
@@ -277,12 +282,28 @@ export function NotaPage({ onToast }: NotaPageProps) {
       <Card className="p-5">
         <CardToolbar
           left={
-            <div className="flex items-center gap-2">
+            <div className="flex gap-2 flex-wrap">
               <PrimaryBtn onClick={openCreate}>
                 {Ico.plus()} Buat Nota
               </PrimaryBtn>
-              <PrimaryBtn onClick={handlePrint} disabled={selected.length === 0}>
-                {Ico.print()} Print Nota{selected.length > 0 ? ` (${selected.length})` : ""}
+              
+              <div className="hidden md:block">
+                <PrimaryBtn onClick={handlePrint} disabled={selected.length === 0}>
+                  {Ico.print()} Print Nota{selected.length > 0 ? ` (${selected.length})` : ""}
+                </PrimaryBtn>
+              </div>
+              <div className="block md:hidden">
+                <PrimaryBtn disabled={true} className="opacity-50 cursor-not-allowed">
+                  {Ico.print()} Print{selected.length > 0 ? ` (${selected.length})` : ""}
+                </PrimaryBtn>
+              </div>
+
+              <PrimaryBtn 
+                onClick={handleDownloadMultiplePdf}
+                disabled={selected.length === 0}
+                className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600"
+              >
+                {Ico.download()} Save PDF{selected.length > 0 ? ` (${selected.length})` : ""}
               </PrimaryBtn>
             </div>
           }

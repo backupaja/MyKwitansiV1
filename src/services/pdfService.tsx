@@ -11,6 +11,8 @@ import type { DataTransaksiView, DataNotaView } from "../types";
 export interface PdfService {
   downloadKwitansiPdf(data: DataTransaksiView): Promise<void>;
   downloadNotaPdf(data: DataNotaView): Promise<void>;
+  downloadMultipleKwitansiPdf(items: DataTransaksiView[]): Promise<void>;
+  downloadMultipleNotaPdf(items: DataNotaView[]): Promise<void>;
   printKwitansiPdf(data: DataTransaksiView): Promise<void>;
   printMultipleKwitansiPdf(items: DataTransaksiView[]): Promise<void>;
   printNotaPdf(data: DataNotaView): Promise<void>;
@@ -177,6 +179,43 @@ export const pdfService: PdfService = {
       throw new Error("Gagal membuat PDF Nota.");
     }
   },
+
+  async downloadMultipleKwitansiPdf(items: DataTransaksiView[]) {
+    if (items.length === 0) return;
+    if (items.length === 1) {
+      return this.downloadKwitansiPdf(items[0]);
+    }
+    try {
+      const { pdf } = await import("@react-pdf/renderer");
+      const { MultiKwitansiDocument } = await import("../documents/KwitansiDocument");
+      // @ts-ignore
+      const blob = await pdf(<MultiKwitansiDocument items={items} />).toBlob();
+      const filename = `Batch_Kwitansi_${items.length}_items.pdf`;
+      triggerDownload(blob, filename);
+    } catch (error) {
+      console.error("[PdfService] Error generating multiple Kwitansi PDFs:", error);
+      throw new Error("Gagal membuat PDF Kwitansi.");
+    }
+  },
+
+  async downloadMultipleNotaPdf(items: DataNotaView[]) {
+    if (items.length === 0) return;
+    if (items.length === 1) {
+      return this.downloadNotaPdf(items[0]);
+    }
+    try {
+      const { pdf } = await import("@react-pdf/renderer");
+      const { MultiNotaDocument } = await import("../documents/NotaDocument");
+      // @ts-ignore
+      const blob = await pdf(<MultiNotaDocument items={items} />).toBlob();
+      const filename = `Batch_Nota_${items.length}_items.pdf`;
+      triggerDownload(blob, filename);
+    } catch (error) {
+      console.error("[PdfService] Error generating multiple Nota PDFs:", error);
+      throw new Error("Gagal membuat PDF Nota.");
+    }
+  },
+
   async printKwitansiPdf(data: DataTransaksiView) {
     try {
       const { pdf } = await import("@react-pdf/renderer");

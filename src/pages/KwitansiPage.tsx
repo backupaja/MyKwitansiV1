@@ -82,6 +82,11 @@ export function KwitansiPage() {
     await pdfService.downloadKwitansiPdf(preview);
   }
 
+  async function handleDownloadMultiplePdf() {
+    if (selected.length === 0) return;
+    await pdfService.downloadMultipleKwitansiPdf(selected);
+  }
+
   return (
     <div>
       <PageHeader title="Print Kwitansi" subtitle="Pilih transaksi untuk mencetak kwitansi" />
@@ -89,9 +94,29 @@ export function KwitansiPage() {
       <Card className="p-5">
         <CardToolbar
           left={
-            <PrimaryBtn onClick={handlePrint} disabled={selected.length === 0}>
-              {Ico.print()} Print Kwitansi{selected.length > 0 ? ` (${selected.length})` : ""}
-            </PrimaryBtn>
+            <div className="flex gap-2">
+              {/* Desktop Print Button */}
+              <div className="hidden md:block">
+                <PrimaryBtn onClick={handlePrint} disabled={selected.length === 0}>
+                  {Ico.print()} Print Kwitansi{selected.length > 0 ? ` (${selected.length})` : ""}
+                </PrimaryBtn>
+              </div>
+              {/* Mobile Print Button Disabled */}
+              <div className="block md:hidden">
+                <PrimaryBtn disabled={true} className="opacity-50 cursor-not-allowed">
+                  {Ico.print()} Print{selected.length > 0 ? ` (${selected.length})` : ""}
+                </PrimaryBtn>
+              </div>
+
+              {/* Save PDF Button */}
+              <PrimaryBtn 
+                onClick={handleDownloadMultiplePdf} 
+                disabled={selected.length === 0}
+                className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600"
+              >
+                {Ico.download()} Save PDF{selected.length > 0 ? ` (${selected.length})` : ""}
+              </PrimaryBtn>
+            </div>
           }
           right={
             <TableControls
