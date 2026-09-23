@@ -16,12 +16,12 @@
 import { useState, useEffect } from "react";
 import { tokens } from "../styles/tokens";
 import { Ico } from "../utils/icons";
-import { formatRp, formatAdminName, formatDocumentNumber, formatCurrencyInput, parseCurrencyInput, formatDateInput } from "../utils/formatters";
+import { formatRp, formatAdminName, formatDocumentNumber, formatCurrencyInput, parseCurrencyInput, formatDateInput, terbilang } from "../utils/formatters";
 import {
   PageHeader, Card, PrimaryBtn, OutlineBtn, Modal, FormField,
   CardToolbar, TableControls, DataTable, Td,
 } from "../components/ui";
-import { transactionService } from "../services";
+import { transactionService, printService, pdfService } from "../services";
 import { useAuth } from "../contexts/AuthContext";
 import type { DataTransaksiView, CreateFormulirTransaksiInput } from "../types";
 
@@ -428,34 +428,91 @@ export function TransaksiPage({ onToast }: TransaksiPageProps) {
 
       {/* ── View Modal (Read-Only) ─────────────────────────────────────────── */}
       {viewTarget && (
-        <Modal title="Detail Transaksi" onClose={() => setViewTarget(null)} wide>
-          <div className="space-y-4">
-            {[
-              { label: "No. Transaksi", value: formatDocumentNumber(viewTarget.id_data_transaksi) },
-              { label: "Admin Input", value: formatAdminName(viewTarget.admin_username) },
-              { label: "Tanggal Input", value: viewTarget.tanggal_input },
-              { label: "Tanggal Transaksi", value: viewTarget.tanggal_transaksi },
-              { label: "Diterima Dari", value: viewTarget.terima_dari },
-              { label: "Penerima Uang", value: viewTarget.penerima_uang },
-              { label: "Untuk Pembayaran", value: viewTarget.untuk_pembayaran },
-              { label: "Kota", value: viewTarget.kota },
-              { label: "Jumlah Uang", value: formatRp(viewTarget.jumlah_uang) },
-              { label: "Total Harga", value: formatRp(viewTarget.total_harga) },
-            ].map((row) => (
-              <div key={row.label} className="flex flex-col md:flex-row md:items-end gap-1 md:gap-4 mb-3 md:mb-0">
-                <span 
-                  className="text-xs md:text-sm font-semibold text-gray-500 md:text-gray-700 md:text-right flex-shrink-0 md:w-[150px]"
-                >
-                  {row.label}
-                </span>
-                <span className="text-sm font-medium md:font-normal text-gray-900 md:text-gray-800 border-b border-gray-200 pb-1 flex-1">
-                  {row.value || "-"}
+        <Modal title="Detail Kwitansi (Dari Transaksi)" onClose={() => setViewTarget(null)} wide>
+          <div className="w-full">
+            <div className="p-2 relative w-full">
+              <h2 className="text-center text-base md:text-lg font-bold tracking-wide text-black mb-4 md:mb-6">KWITANSI PEMBAYARAN</h2>
+            
+            <div className="space-y-2 md:space-y-4">
+              {[
+                { label: "No Kwitansi",      value: formatDocumentNumber(viewTarget.id_data_transaksi) },
+                { label: "Diterima Dari",    value: viewTarget.terima_dari },
+                { label: "Terbilang",        value: terbilang(viewTarget.jumlah_uang) + " Rupiah" },
+                { label: "Untuk Pembayaran", value: viewTarget.untuk_pembayaran },
+              ].map((row) => (
+                <div key={row.label} className="flex gap-2 md:gap-4 items-end">
+                  <span
+                    className="text-xs md:text-sm font-bold text-black text-right flex-shrink-0 pb-1 w-[80px] md:w-[140px]"
+                  >
+                    {row.label}
+                  </span>
+                  <span className="flex-1 text-sm font-bold text-black border-b border-black pb-1">
+                    {row.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-end justify-between mt-8">
+              <div className="flex items-center w-48 border-y border-black py-2">
+                <span className="text-sm font-bold text-black mr-2">Rp</span>
+                <span className="text-base font-bold text-black">
+                  {formatRp(viewTarget.jumlah_uang).replace("Rp ", "")}
                 </span>
               </div>
-            ))}
+              
+              <div className="flex flex-col items-center w-48">
+                <span className="text-xs font-bold text-black mb-1">
+                  {viewTarget.kota} , {viewTarget.tanggal_transaksi}
+                </span>
+                <div className="w-full border-b border-black mb-6" />
+                <div className="h-8" />
+              </div>
+            </div>
+            </div>
+          </div>
             
-            <div className="mt-8 flex justify-end">
-              <PrimaryBtn onClick={() => setViewTarget(null)}>Tutup</PrimaryBtn>
+          <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <OutlineBtn onClick={() => setViewTarget(null)}>
+              Tutup
+            </OutlineBtn>
+            
+            <div className="hidden md:block">
+              <OutlineBtn onClick={() => pdfService.downloadKwitansiPdf(viewTarget)}>
+                {Ico.download()} Download PDF
+              </OutlineBtn>
+            </div>
+            
+            {/* Print Button: Active on Desktop, Disabled on Mobile */}
+            <div className="hidden md:block">
+              <PrimaryBtn
+                onClick={async () => {
+                  await printService.printKwitansi(viewTarget, auth.user!.id);
+                  setViewTarget(null);
+                }}
+              >
+                {Ico.print()} Print
+              </PrimaryBtn>
+            </div>
+            
+            <div className="block md:hidden">
+              <PrimaryBtn
+                className="opacity-50 cursor-not-allowed"
+                disabled={true}
+                title="Gunakan Save PDF di HP"
+              >
+                {Ico.print()} Print
+              </PrimaryBtn>
+            </div>
+            
+            {/* Mobile Only: Save PDF */}
+            <div className="block md:hidden">
+              <PrimaryBtn
+                className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600"
+                onClick={() => pdfService.downloadKwitansiPdf(viewTarget)}
+              >
+                {Ico.download()} Save PDF
+              </PrimaryBtn>
             </div>
           </div>
         </Modal>
