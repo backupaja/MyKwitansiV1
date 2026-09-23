@@ -397,25 +397,25 @@ export function NotaPage({ onToast }: NotaPageProps) {
              </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[500px] text-sm">
+          <div className="overflow-x-auto w-full">
+            <table className="w-max min-w-full text-sm">
               <thead>
                 <tr className="border-y border-gray-900">
-                  <th className="px-4 py-2 text-center font-bold text-gray-900">Jumlah Item</th>
-                  <th className="px-4 py-2 text-center font-bold text-gray-900">Satuan</th>
-                  <th className="px-4 py-2 text-center font-bold text-gray-900">Nama Barang</th>
-                  <th className="px-4 py-2 text-center font-bold text-gray-900">Harga</th>
-                  <th className="px-4 py-2 text-center font-bold text-gray-900">Sub Total Harga</th>
+                  <th className="px-4 py-2 text-center font-bold text-gray-900 whitespace-nowrap">Jumlah Item</th>
+                  <th className="px-4 py-2 text-center font-bold text-gray-900 whitespace-nowrap">Satuan</th>
+                  <th className="px-4 py-2 text-center font-bold text-gray-900 whitespace-nowrap">Nama Barang</th>
+                  <th className="px-4 py-2 text-center font-bold text-gray-900 whitespace-nowrap">Harga</th>
+                  <th className="px-4 py-2 text-center font-bold text-gray-900 whitespace-nowrap">Sub Total Harga</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {viewTarget.items.map((it) => (
                   <tr key={it.id_item_nota}>
-                    <td className="px-4 py-2.5 text-center font-semibold">{it.jumlah_item}</td>
-                    <td className="px-4 py-2.5 text-center font-semibold">{it.satuan}</td>
-                    <td className="px-4 py-2.5 text-center font-semibold">{it.nama_barang}</td>
-                    <td className="px-4 py-2.5 text-center font-semibold tabular-nums">{formatRp(it.harga)}</td>
-                    <td className="px-4 py-2.5 text-center font-semibold tabular-nums">{formatRp(it.sub_total_harga)}</td>
+                    <td className="px-4 py-2.5 text-center font-semibold whitespace-nowrap">{it.jumlah_item}</td>
+                    <td className="px-4 py-2.5 text-center font-semibold whitespace-nowrap">{it.satuan}</td>
+                    <td className="px-4 py-2.5 text-center font-semibold whitespace-nowrap">{it.nama_barang}</td>
+                    <td className="px-4 py-2.5 text-center font-semibold tabular-nums whitespace-nowrap">{formatRp(it.harga)}</td>
+                    <td className="px-4 py-2.5 text-center font-semibold tabular-nums whitespace-nowrap">{formatRp(it.sub_total_harga)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -424,36 +424,44 @@ export function NotaPage({ onToast }: NotaPageProps) {
 
           <div className="mt-8 flex justify-end items-center gap-4 border-t border-gray-900 pt-4">
             <span className="text-sm font-bold text-gray-900">Total</span>
-            <span className="text-sm font-bold border-b border-gray-900 pb-0.5">
+            <span className="text-sm font-bold border-b border-gray-900 pb-0.5 whitespace-nowrap">
               {formatRp(viewTarget.total_harga)}
             </span>
           </div>
           
           <div className="mt-6 flex justify-end gap-3">
             <OutlineBtn onClick={() => setViewTarget(null)}>Tutup</OutlineBtn>
-            <OutlineBtn onClick={handleDownloadPdf} className="hidden md:flex">
-              {Ico.download()} Download PDF
-            </OutlineBtn>
+            <div className="hidden md:block">
+              <OutlineBtn onClick={handleDownloadPdf}>
+                {Ico.download()} Download PDF
+              </OutlineBtn>
+            </div>
             
             {/* Print Button: Active on Desktop, Disabled on Mobile */}
-            <PrimaryBtn onClick={handlePrintNota} className="px-6 hidden md:flex">
-              {Ico.print()} Print Nota
-            </PrimaryBtn>
-            <PrimaryBtn
-              className="px-6 flex md:hidden opacity-50 cursor-not-allowed"
-              disabled={true}
-              title="Gunakan Save PDF di HP"
-            >
-              {Ico.print()} Print Nota
-            </PrimaryBtn>
+            <div className="hidden md:block">
+              <PrimaryBtn onClick={handlePrintNota} className="px-6">
+                {Ico.print()} Print Nota
+              </PrimaryBtn>
+            </div>
+            <div className="block md:hidden">
+              <PrimaryBtn
+                className="px-6 opacity-50 cursor-not-allowed"
+                disabled={true}
+                title="Gunakan Save PDF di HP"
+              >
+                {Ico.print()} Print Nota
+              </PrimaryBtn>
+            </div>
             
             {/* Mobile Only: Save PDF */}
-            <PrimaryBtn
-              onClick={handleDownloadPdf}
-              className="flex md:hidden bg-blue-600 hover:bg-blue-700"
-            >
-              {Ico.download()} Save PDF
-            </PrimaryBtn>
+            <div className="block md:hidden">
+              <PrimaryBtn
+                onClick={handleDownloadPdf}
+                className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600"
+              >
+                {Ico.download()} Save PDF
+              </PrimaryBtn>
+            </div>
           </div>
         </Modal>
       )}

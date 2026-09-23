@@ -195,35 +195,44 @@ export function KwitansiPage() {
             <OutlineBtn onClick={() => setPreview(null)}>
               Tutup
             </OutlineBtn>
-            <OutlineBtn onClick={handleDownloadPdf} className="hidden md:flex">
-              {Ico.download()} Download PDF
-            </OutlineBtn>
+            
+            <div className="hidden md:block">
+              <OutlineBtn onClick={handleDownloadPdf}>
+                {Ico.download()} Download PDF
+              </OutlineBtn>
+            </div>
             
             {/* Print Button: Active on Desktop, Disabled on Mobile */}
-            <PrimaryBtn
-              className="hidden md:flex"
-              onClick={async () => {
-                await printService.printKwitansi(preview, adminId);
-                setPreview(null);
-              }}
-            >
-              {Ico.print()} Print
-            </PrimaryBtn>
-            <PrimaryBtn
-              className="flex md:hidden opacity-50 cursor-not-allowed"
-              disabled={true}
-              title="Gunakan Save PDF di HP"
-            >
-              {Ico.print()} Print
-            </PrimaryBtn>
+            <div className="hidden md:block">
+              <PrimaryBtn
+                onClick={async () => {
+                  await printService.printKwitansi(preview, adminId);
+                  setPreview(null);
+                }}
+              >
+                {Ico.print()} Print
+              </PrimaryBtn>
+            </div>
+            
+            <div className="block md:hidden">
+              <PrimaryBtn
+                className="opacity-50 cursor-not-allowed"
+                disabled={true}
+                title="Gunakan Save PDF di HP"
+              >
+                {Ico.print()} Print
+              </PrimaryBtn>
+            </div>
             
             {/* Mobile Only: Save PDF */}
-            <PrimaryBtn
-              className="flex md:hidden bg-blue-600 hover:bg-blue-700"
-              onClick={handleDownloadPdf}
-            >
-              {Ico.download()} Save PDF
-            </PrimaryBtn>
+            <div className="block md:hidden">
+              <PrimaryBtn
+                className="!bg-blue-600 hover:!bg-blue-700 !border-blue-600"
+                onClick={handleDownloadPdf}
+              >
+                {Ico.download()} Save PDF
+              </PrimaryBtn>
+            </div>
           </div>
         </Modal>
       )}
