@@ -382,16 +382,16 @@ export function NotaPage({ onToast }: NotaPageProps) {
       {/* ── View Detail Modal (Figma design reproduction) ────────────────── */}
       {viewTarget && (
         <Modal title="Data Nota" onClose={() => setViewTarget(null)} wide>
-          <div className="mb-6 flex items-center justify-between border-b pb-4">
-             <div className="flex items-center gap-4">
-               <span className="text-sm font-semibold text-gray-700">No Nota</span>
-               <span className="text-lg font-bold border-b border-gray-900 pb-0.5 min-w-[3rem] text-center">
+          <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4">
+             <div className="flex items-center gap-2 md:gap-4">
+               <span className="text-xs md:text-sm font-semibold text-gray-700 w-16 md:w-auto">No Nota</span>
+               <span className="text-sm md:text-lg font-bold border-b border-gray-900 pb-0.5 min-w-[3rem] text-center">
                  {formatDocumentNumber(viewTarget.id_data_nota)}
                </span>
              </div>
-             <div className="flex items-center gap-4">
-               <span className="text-sm font-semibold text-gray-700">Tanggal Transaksi</span>
-               <span className="text-sm font-semibold border-b border-gray-900 pb-0.5">
+             <div className="flex items-center gap-2 md:gap-4">
+               <span className="text-xs md:text-sm font-semibold text-gray-700 w-16 md:w-auto">Tanggal</span>
+               <span className="text-xs md:text-sm font-bold border-b border-gray-900 pb-0.5">
                  {viewTarget.tanggal_transaksi}
                </span>
              </div>
