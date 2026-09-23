@@ -92,6 +92,11 @@ const styles = StyleSheet.create({
     borderBottomColor: "#000000",
     marginBottom: 4,
   },
+  signatureLineTop: {
+    width: "100%",
+    borderBottomWidth: 1,
+    borderBottomColor: "#000000",
+  },
   signatureSpace: {
     height: 40,
   },
@@ -151,10 +156,11 @@ function KwitansiBlock({ data }: Props) {
           <Text style={styles.signatureDate}>
             {data.kota} , {data.tanggal_transaksi}
           </Text>
+          <View style={styles.signatureLineTop} />
           <View style={styles.signatureSpace} />
           <View style={styles.signatureLine} />
           <Text style={styles.signatureName}>
-            ({data.penerima_uang})
+            {data.penerima_uang}
           </Text>
         </View>
       </View>
