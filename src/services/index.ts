@@ -21,3 +21,6 @@ export const printService = USE_MOCK ? mockPrintService : supabasePrintService;
 
 // PDF Service remains the same (it doesn't have a DB backend, it just generates files)
 export { pdfService } from "./pdfService";
+
+// For Undangan (currently only mock implemented)
+export { undanganService } from "./undanganService";

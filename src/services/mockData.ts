@@ -86,3 +86,27 @@ export const MOCK_NOTA: DataNotaView[] = [
     ]
   },
 ];
+
+export const MOCK_UNDANGAN: import("../types").DataUndanganView[] = [
+  {
+    id_formulir_undangan: 1,
+    id_data_undangan: 1,
+    id_admin: 1,
+    admin_username: "Bang Karir",
+    acara: "Rapat Persiapan Pengukuhan GB",
+    penyelenggara: "Kabag Bang SDM",
+    tanggal_acara: "Rabu, 30 September 2026",
+    waktu: "08.30 - 16.00 WIB",
+    tempat: "Ruang Rapat CoE",
+    agenda: "Persiapan Teknis, Konsep Acara Pengukuhan GB",
+    peserta: "All Tim Bang SDM",
+    dokumen_pendukung: "-",
+    hasil_pertemuan: "-",
+    tembusan: "-",
+    tempat_tanggal_surat: "Bandung, 30 September 2026",
+    nama_ttd: "Toufan Tambunan",
+    jabatan_ttd: "Kabag Bang SDM",
+    tanggal_input: "2026-09-30T00:00:00.000Z",
+    deleted_at: null,
+  }
+];

@@ -182,3 +182,37 @@ export interface CreateFormulirNotaInput {
     jumlah_item: number;
   }>;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Undangan (New Feature)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface FormulirUndangan {
+  id_formulir_undangan: number;
+  acara:                string;
+  penyelenggara:        string;
+  tanggal_acara:        string;
+  waktu:                string;
+  tempat:               string;
+  agenda:               string;
+  peserta:              string;
+  dokumen_pendukung:    string;
+  hasil_pertemuan:      string;
+  tembusan:             string;
+  tempat_tanggal_surat: string;
+  nama_ttd:             string;
+  jabatan_ttd:          string;
+  tanggal_input:        string; // ISO 8601
+  id_admin:             number;
+}
+
+export interface DataUndanganView extends FormulirUndangan {
+  id_data_undangan: number; // alias for UI compatibility
+  admin_username:   string;
+  deleted_at:       string | null;
+}
+
+export type CreateFormulirUndanganInput = Omit<
+  FormulirUndangan,
+  "id_formulir_undangan" | "tanggal_input" | "id_admin"
+>;

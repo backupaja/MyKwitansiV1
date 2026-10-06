@@ -10,6 +10,7 @@ const NAV_ITEMS: { path: string; label: string; icon: (c?: string) => React.JSX.
   { path: "/transaksi", label: "Transaksi",      icon: Ico.folder  },
   { path: "/kwitansi",  label: "Kwitansi",       icon: Ico.receipt },
   { path: "/nota",      label: "Nota",           icon: Ico.note    },
+  { path: "/undangan",  label: "Undangan",       icon: Ico.folder  },
   { path: "/trash",     label: "Sampah",         icon: Ico.trash   },
 ];
 

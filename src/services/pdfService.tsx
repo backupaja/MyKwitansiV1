@@ -17,6 +17,8 @@ export interface PdfService {
   printMultipleKwitansiPdf(items: DataTransaksiView[]): Promise<void>;
   printNotaPdf(data: DataNotaView): Promise<void>;
   printMultipleNotaPdf(items: DataNotaView[]): Promise<void>;
+  downloadUndanganPdf(data: import("../types").DataUndanganView): Promise<void>;
+  printUndanganPdf(data: import("../types").DataUndanganView): Promise<void>;
 }
 
 /** Sanitize string for use in Windows/Linux filenames */
@@ -275,4 +277,29 @@ export const pdfService: PdfService = {
       throw new Error("Gagal print PDF Nota.");
     }
   },
+
+  async downloadUndanganPdf(data: import("../types").DataUndanganView) {
+    try {
+      const { pdf } = await import("@react-pdf/renderer");
+      const { UndanganDocument } = await import("../documents/UndanganDocument");
+      const blob = await pdf(<UndanganDocument data={data} />).toBlob();
+      const filename = `Undangan_${data.id_formulir_undangan}_${sanitizeFilename(data.acara)}.pdf`;
+      triggerDownload(blob, filename);
+    } catch (e) {
+      console.error("PDF generation error:", e);
+      alert("Gagal membuat PDF Undangan.");
+    }
+  },
+
+  async printUndanganPdf(data: import("../types").DataUndanganView) {
+    try {
+      const { pdf } = await import("@react-pdf/renderer");
+      const { UndanganDocument } = await import("../documents/UndanganDocument");
+      const blob = await pdf(<UndanganDocument data={data} />).toBlob();
+      triggerPrint(blob);
+    } catch (e) {
+      console.error("Print PDF error:", e);
+      alert("Gagal memproses PDF untuk diprint.");
+    }
+  }
 };
