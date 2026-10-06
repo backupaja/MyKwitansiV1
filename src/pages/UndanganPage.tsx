@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { tokens } from "../styles/tokens";
 import { Ico } from "../utils/icons";
-import { formatAdminName, formatDocumentNumber, formatDateInput } from "../utils/formatters";
+import { formatAdminName, formatDocumentNumber } from "../utils/formatters";
 import {
   PageHeader, Card, PrimaryBtn, OutlineBtn, Modal, FormField,
   CardToolbar, TableControls, DataTable, Td,
@@ -39,7 +39,7 @@ const EMPTY_FORM: CreateFormulirUndanganInput = {
 };
 
 export default function UndanganPage() {
-  const { user } = useAuth();
+  const { currentAdmin } = useAuth();
   
   // Data state
   const [rows, setRows] = useState<DataUndanganView[]>([]);
@@ -127,9 +127,9 @@ export default function UndanganPage() {
     }
     try {
       if (editingId) {
-        await undanganService.update(editingId, formData, user?.id_admin || 1);
+        await undanganService.update(editingId, formData, currentAdmin?.id_admin || 1);
       } else {
-        await undanganService.create(formData, user?.id_admin || 1);
+        await undanganService.create(formData, currentAdmin?.id_admin || 1);
       }
       setIsFormOpen(false);
       loadData();
