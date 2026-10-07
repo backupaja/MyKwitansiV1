@@ -55,6 +55,8 @@ export default function UndanganPage() {
   const [formError, setFormError] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<CreateFormulirUndanganInput>(EMPTY_FORM);
+  const [formTempatSurat, setFormTempatSurat] = useState("Bandung");
+  const [formTanggalSurat, setFormTanggalSurat] = useState("");
 
   // Delete modal state
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
