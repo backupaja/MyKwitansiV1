@@ -239,13 +239,13 @@ export default function UndanganPage() {
       </Card>
 
       {/* CREATE / EDIT MODAL */}
-      <Modal
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        title={editingId ? "Edit Undangan" : "Tambah Undangan"}
-        maxWidth="max-w-2xl"
-      >
-        <div className="space-y-4 pt-4">
+      {isFormOpen && (
+        <Modal
+          onClose={() => setIsFormOpen(false)}
+          title={editingId ? "Edit Undangan" : "Tambah Undangan"}
+          wide
+        >
+          <div className="space-y-4 pt-4">
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Acara" error={formError && !formData.acara ? "Wajib diisi" : undefined}>
               <input type="text" className="input-field" value={formData.acara} onChange={(e) => setFormData({ ...formData, acara: e.target.value })} />
@@ -311,15 +311,16 @@ export default function UndanganPage() {
             </PrimaryBtn>
           </div>
         </div>
-      </Modal>
+        </Modal>
+      )}
 
       {/* DELETE MODAL */}
-      <Modal
-        isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
-        title="Hapus Undangan"
-      >
-        <div className="py-4">
+      {isDeleteOpen && (
+        <Modal
+          onClose={() => setIsDeleteOpen(false)}
+          title="Hapus Undangan"
+        >
+          <div className="py-4">
           <p className="text-gray-600 mb-6">
             Apakah Anda yakin ingin menghapus data undangan ini?
           </p>
@@ -333,16 +334,16 @@ export default function UndanganPage() {
             </button>
           </div>
         </div>
-      </Modal>
+        </Modal>
+      )}
 
       {/* VIEW / PREVIEW MODAL */}
-      <Modal
-        isOpen={!!viewTarget}
-        onClose={() => setViewTarget(null)}
-        title="Preview Undangan"
-        maxWidth="max-w-2xl"
-      >
-        {viewTarget && (
+      {!!viewTarget && (
+        <Modal
+          onClose={() => setViewTarget(null)}
+          title="Preview Undangan"
+          wide
+        >
           <div>
             <div className="p-8 border border-gray-200 mt-4 bg-white min-h-[400px]">
               <div className="flex justify-between items-center border-b-2 border-black pb-4 mb-4">
@@ -397,8 +398,8 @@ export default function UndanganPage() {
               </OutlineBtn>
             </div>
           </div>
-        )}
-      </Modal>
+        </Modal>
+      )}
     </div>
   );
 }
