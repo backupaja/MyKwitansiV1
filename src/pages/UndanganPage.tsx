@@ -240,14 +240,14 @@ export default function UndanganPage() {
       <Card className="p-5">
         <CardToolbar
           left={
-            <div className="flex gap-2 w-full overflow-x-auto pb-1" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            <div className="flex flex-wrap gap-2">
               <PrimaryBtn onClick={openCreate} className="flex-shrink-0">
-                {Ico.plus()} Buat Undangan
+                {Ico.plus()} <span className="hidden sm:inline">Buat </span>Undangan
               </PrimaryBtn>
               
               <div className="hidden md:block flex-shrink-0">
                 <PrimaryBtn onClick={handleBulkPrint} disabled={selectedIds.size === 0} className="flex-shrink-0">
-                  {Ico.print()} Print Undangan{selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
+                  {Ico.print()} Print{selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
                 </PrimaryBtn>
               </div>
               <div className="block md:hidden flex-shrink-0">
@@ -277,7 +277,6 @@ export default function UndanganPage() {
 
         <DataTable
           headers={HEADERS}
-          headerClasses={["", "hidden sm:table-cell", "hidden lg:table-cell", "hidden md:table-cell", "", "hidden lg:table-cell", ""]}
           shownEntries={currentData.length}
           totalEntries={filtered.length}
           currentPage={page}
@@ -309,18 +308,18 @@ export default function UndanganPage() {
                 />
               </td>
               <Td><span className="whitespace-nowrap">{formatDocumentNumber(visualId)}</span></Td>
-              <Td className="hidden sm:table-cell"><span className="whitespace-nowrap">{row.tanggal_acara.includes("-") ? formatDateFullIndo(row.tanggal_acara) : row.tanggal_acara}</span></Td>
-              <Td className="hidden lg:table-cell"><span className="whitespace-nowrap">{row.tanggal_input.substring(0, 10)}</span></Td>
-              <Td className="hidden md:table-cell">
+              <Td><span className="whitespace-nowrap">{row.tanggal_acara.includes("-") ? formatDateFullIndo(row.tanggal_acara) : row.tanggal_acara}</span></Td>
+              <Td><span className="whitespace-nowrap">{row.tanggal_input.substring(0, 10)}</span></Td>
+              <Td>
                 <span className={`font-semibold whitespace-nowrap ${row.admin_username === "Bang Karir" ? "text-brand-600" : "text-brand-800"}`}>
                   {formatAdminName(row.admin_username)}
                 </span>
               </Td>
               <Td>
-                <span className="block max-w-[100px] sm:max-w-[200px] truncate" title={row.acara}>{row.acara}</span>
+                <span className="block max-w-[150px] truncate" title={row.acara}>{row.acara}</span>
               </Td>
-              <Td className="hidden lg:table-cell">
-                <span className="block max-w-[160px] truncate" title={row.tempat_acara}>{row.tempat_acara}</span>
+              <Td>
+                <span className="block max-w-[130px] truncate" title={row.tempat_acara}>{row.tempat_acara}</span>
               </Td>
               <td className="px-4 py-3.5 text-center whitespace-nowrap">
                 <div className="flex items-center gap-1.5 justify-center">
