@@ -317,7 +317,7 @@ export default function UndanganPage() {
                 </span>
               </Td>
               <Td>
-                <span className="block max-w-[200px] truncate" title={row.acara}>{row.acara}</span>
+                <span className="block max-w-[100px] sm:max-w-[200px] truncate" title={row.acara}>{row.acara}</span>
               </Td>
               <Td className="hidden lg:table-cell">
                 <span className="block max-w-[160px] truncate" title={row.tempat_acara}>{row.tempat_acara}</span>
