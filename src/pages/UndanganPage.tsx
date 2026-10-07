@@ -169,24 +169,30 @@ export default function UndanganPage() {
         subtitle="Kelola semua data surat undangan"
       />
 
-      <Card>
-        <CardToolbar>
-          <PrimaryBtn onClick={openCreate}>
-            + Tambah Undangan
-          </PrimaryBtn>
-          <TableControls
-            search={search}
-            onSearchChange={handleSearch}
-            pageSize={pageSize}
-            onPageSizeChange={handlePageSize}
-          />
-        </CardToolbar>
+      <Card className="p-5">
+        <CardToolbar
+          left={
+            <PrimaryBtn onClick={openCreate}>
+              + Tambah Undangan
+            </PrimaryBtn>
+          }
+          right={
+            <TableControls
+              search={search}
+              onSearch={handleSearch}
+              pageSize={pageSize}
+              onPageSize={handlePageSize}
+            />
+          }
+        />
 
         <DataTable
           headers={HEADERS}
-          loading={loading}
-          isEmpty={filtered.length === 0}
-          emptyMessage="Belum ada data undangan"
+          shownEntries={currentData.length}
+          totalEntries={filtered.length}
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
         >
           {currentData.map((row) => (
             <tr key={row.id_formulir_undangan} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
@@ -213,29 +219,14 @@ export default function UndanganPage() {
               </Td>
             </tr>
           ))}
+          {currentData.length === 0 && (
+            <tr>
+              <td colSpan={HEADERS.length} className="px-4 py-10 text-center text-sm text-gray-400">
+                {search ? `Tidak ada hasil untuk "${search}".` : "Belum ada data undangan."}
+              </td>
+            </tr>
+          )}
         </DataTable>
-
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500">
-            <span>Menampilkan {((page - 1) * pageSize) + 1} - {Math.min(page * pageSize, filtered.length)} dari {filtered.length}</span>
-            <div className="flex gap-1">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="px-3 py-1 border border-gray-200 rounded disabled:opacity-50"
-              >
-                Prev
-              </button>
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                className="px-3 py-1 border border-gray-200 rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
       </Card>
 
       {/* CREATE / EDIT MODAL */}
