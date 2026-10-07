@@ -231,7 +231,7 @@ export function DataTable({
   return (
     <>
       <div className="w-full pb-2 overflow-x-auto" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-        <table className="w-full text-sm" style={{ minWidth: "360px" }}>
+        <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100">
               {showLeadingColumn && (

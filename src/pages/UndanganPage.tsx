@@ -231,7 +231,7 @@ export default function UndanganPage() {
   };
 
   return (
-    <div className="px-4 sm:px-0 max-w-6xl mx-auto space-y-6">
+    <div>
       <PageHeader
         title="Data Undangan"
         subtitle="Kelola semua data surat undangan"
