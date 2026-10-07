@@ -231,7 +231,7 @@ export default function UndanganPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="px-4 sm:px-0 max-w-6xl mx-auto space-y-6">
       <PageHeader
         title="Data Undangan"
         subtitle="Kelola semua data surat undangan"
@@ -277,6 +277,7 @@ export default function UndanganPage() {
 
         <DataTable
           headers={HEADERS}
+          headerClasses={["", "hidden sm:table-cell", "hidden lg:table-cell", "hidden md:table-cell", "", "hidden lg:table-cell", ""]}
           shownEntries={currentData.length}
           totalEntries={filtered.length}
           currentPage={page}
@@ -308,9 +309,9 @@ export default function UndanganPage() {
                 />
               </td>
               <Td><span className="whitespace-nowrap">{formatDocumentNumber(visualId)}</span></Td>
-              <Td><span className="whitespace-nowrap">{row.tanggal_acara.includes("-") ? formatDateFullIndo(row.tanggal_acara) : row.tanggal_acara}</span></Td>
-              <Td><span className="whitespace-nowrap">{row.tanggal_input.substring(0, 10)}</span></Td>
-              <Td>
+              <Td className="hidden sm:table-cell"><span className="whitespace-nowrap">{row.tanggal_acara.includes("-") ? formatDateFullIndo(row.tanggal_acara) : row.tanggal_acara}</span></Td>
+              <Td className="hidden lg:table-cell"><span className="whitespace-nowrap">{row.tanggal_input.substring(0, 10)}</span></Td>
+              <Td className="hidden md:table-cell">
                 <span className={`font-semibold whitespace-nowrap ${row.admin_username === "Bang Karir" ? "text-brand-600" : "text-brand-800"}`}>
                   {formatAdminName(row.admin_username)}
                 </span>
@@ -318,7 +319,7 @@ export default function UndanganPage() {
               <Td>
                 <span className="block max-w-[200px] truncate" title={row.acara}>{row.acara}</span>
               </Td>
-              <Td>
+              <Td className="hidden lg:table-cell">
                 <span className="block max-w-[160px] truncate" title={row.tempat_acara}>{row.tempat_acara}</span>
               </Td>
               <td className="px-4 py-3.5 text-center whitespace-nowrap">
@@ -377,12 +378,12 @@ export default function UndanganPage() {
           wide
         >
           <div className="space-y-4 pt-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Acara" value={formData.acara} onChange={(val) => setFormData({ ...formData, acara: val })} error={formError && !formData.acara ? "Wajib diisi" : undefined} />
             <FormField label="Penyelenggara" value={formData.penyelenggara} onChange={(val) => setFormData({ ...formData, penyelenggara: val })} />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <FormField label="Hari/Tanggal Acara" type="date" value={formData.tanggal_acara.includes("-") ? formData.tanggal_acara : ""} onChange={(val) => setFormData({ ...formData, tanggal_acara: val })} error={formError && !formData.tanggal_acara ? "Wajib diisi" : undefined} />
             <FormField label="Waktu Mulai" type="time" value={formData.waktu_mulai} onChange={(val) => setFormData({ ...formData, waktu_mulai: val })} />
             <FormField label="Waktu Selesai" type="time" value={formData.waktu_selesai} onChange={(val) => setFormData({ ...formData, waktu_selesai: val })} />
@@ -394,14 +395,14 @@ export default function UndanganPage() {
 
           <FormField label="Peserta" type="textarea" value={formData.peserta} onChange={(val) => setFormData({ ...formData, peserta: val })} />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Dokumen Pendukung" value={formData.dokumen_pendukung} onChange={(val) => setFormData({ ...formData, dokumen_pendukung: val })} />
             <FormField label="Hasil Pertemuan" value={formData.hasil_pertemuan} onChange={(val) => setFormData({ ...formData, hasil_pertemuan: val })} />
           </div>
 
           <FormField label="Tembusan" value={formData.tembusan} onChange={(val) => setFormData({ ...formData, tembusan: val })} />
 
-          <div className="border-t border-gray-100 pt-4 mt-4 grid grid-cols-4 gap-4">
+          <div className="border-t border-gray-100 pt-4 mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
             <FormField label="Tempat Surat" value={formData.tempat_surat} onChange={(val) => setFormData({ ...formData, tempat_surat: val })} placeholder="Contoh: Bandung" />
             <FormField label="Tanggal Surat" type="date" value={formData.tanggal_surat.includes("-") ? formData.tanggal_surat : ""} onChange={(val) => setFormData({ ...formData, tanggal_surat: val })} />
             <FormField label="Nama TTD" value={formData.nama_ttd} onChange={(val) => setFormData({ ...formData, nama_ttd: val })} />

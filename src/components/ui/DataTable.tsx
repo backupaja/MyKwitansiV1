@@ -52,11 +52,11 @@ const { color } = tokens;
 
 // ── Table header cell ─────────────────────────────────────────────────────
 
-export function Th({ children, align = "left" }: { children: React.ReactNode; align?: "left" | "right" | "center" }) {
+export function Th({ children, align = "left", className = "" }: { children: React.ReactNode; align?: "left" | "right" | "center"; className?: string }) {
   return (
     <th className={`px-2 py-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wide whitespace-nowrap ${
       align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"
-    }`}>
+    } ${className}`}>
       {children} {align === "left" && children ? Ico.sort() : null}
     </th>
   );
@@ -68,18 +68,22 @@ export function Td({
   children,
   accent = false,
   mono = false,
+  className = "",
 }: {
   children: React.ReactNode;
   /** Render in brand colour with semibold weight (e.g. admin name). */
   accent?: boolean;
   /** Apply tabular-nums for numbers and currencies. */
   mono?: boolean;
+  /** Extra Tailwind classes (e.g. responsive visibility). */
+  className?: string;
 }) {
   return (
     <td
       className={`px-2 py-2 text-[12px] whitespace-nowrap
         ${accent ? "font-semibold" : "font-normal text-gray-700"}
-        ${mono ? "tabular-nums" : ""}`}
+        ${mono ? "tabular-nums" : ""}
+        ${className}`}
       style={accent ? { color: color.brand } : undefined}
     >
       {children}
@@ -210,6 +214,7 @@ export function DataTable({
   onPageChange,
   showLeadingColumn = false,
   leadingHeader,
+  headerClasses,
 }: {
   headers: string[];
   children: React.ReactNode;
@@ -220,6 +225,8 @@ export function DataTable({
   onPageChange?: (page: number) => void;
   showLeadingColumn?: boolean;
   leadingHeader?: React.ReactNode;
+  /** Optional per-column className overrides (same length as headers) */
+  headerClasses?: string[];
 }) {
   return (
     <>
@@ -231,7 +238,11 @@ export function DataTable({
                 <th className="px-4 py-3 w-10">{leadingHeader ?? null}</th>
               )}
               {headers.map((h, i) => (
-                <Th key={h || `col-${i}`} align={i === headers.length - 1 && (h === "Aksi" || h === "") ? "center" : "left"}>{h}</Th>
+                <Th
+                  key={h || `col-${i}`}
+                  align={i === headers.length - 1 && (h === "Aksi" || h === "") ? "center" : "left"}
+                  className={headerClasses?.[i] ?? ""}
+                >{h}</Th>
               ))}
             </tr>
           </thead>
