@@ -1,6 +1,7 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet, Font, Image } from "@react-pdf/renderer";
 import type { DataUndanganView } from "../types";
+import { formatDateFullIndo } from "../utils/formatters";
 
 // Register fonts if not already registered in pdfService, or assume they are.
 // Usually pdfService registers them, but if we need bold we must ensure it's available.
@@ -145,7 +146,9 @@ export function UndanganDocument({ data }: Props) {
         <View style={styles.row}>
           <View style={[styles.colHalf, styles.borderRight, { flex: 0.8 }]}>
             <Text style={styles.labelText}>Hari/Tanggal:</Text>
-            <Text style={styles.valueText}>{data.tanggal_acara}</Text>
+            <Text style={styles.valueText}>
+              {data.tanggal_acara.includes("-") ? formatDateFullIndo(data.tanggal_acara) : data.tanggal_acara}
+            </Text>
           </View>
           <View style={[styles.colHalf, styles.borderRight, { flex: 0.6 }]}>
             <Text style={styles.labelText}>Waktu:</Text>

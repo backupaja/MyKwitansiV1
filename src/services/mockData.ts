@@ -95,7 +95,7 @@ export const MOCK_UNDANGAN: import("../types").DataUndanganView[] = [
     admin_username: "Bang Karir",
     acara: "Rapat Persiapan Pengukuhan GB",
     penyelenggara: "Kabag Bang SDM",
-    tanggal_acara: "Rabu, 30 September 2026",
+    tanggal_acara: "2026-09-30",
     waktu: "08.30 - 16.00 WIB",
     tempat: "Ruang Rapat CoE",
     agenda: "Persiapan Teknis, Konsep Acara Pengukuhan GB",

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { tokens } from "../styles/tokens";
 import { Ico } from "../utils/icons";
-import { formatAdminName, formatDocumentNumber } from "../utils/formatters";
+import { formatAdminName, formatDocumentNumber, formatDateFullIndo } from "../utils/formatters";
 import {
   PageHeader, Card, PrimaryBtn, OutlineBtn, Modal, FormField,
   CardToolbar, TableControls, DataTable, Td,
@@ -95,7 +95,13 @@ export default function UndanganPage() {
   const openCreate = () => {
     setFormError("");
     setEditingId(null);
-    setFormData(EMPTY_FORM);
+    setFormData({
+      ...EMPTY_FORM,
+      nama_ttd: localStorage.getItem("mykwitansi_undangan_nama_ttd") || "",
+      jabatan_ttd: localStorage.getItem("mykwitansi_undangan_jabatan_ttd") || "",
+    });
+    setFormTempatSurat("Bandung");
+    setFormTanggalSurat("");
     setIsFormOpen(true);
   };
 
@@ -103,20 +109,13 @@ export default function UndanganPage() {
     setFormError("");
     setEditingId(row.id_formulir_undangan);
     setFormData({
-      acara: row.acara,
-      penyelenggara: row.penyelenggara,
-      tanggal_acara: row.tanggal_acara,
-      waktu: row.waktu,
-      tempat: row.tempat,
-      agenda: row.agenda,
-      peserta: row.peserta,
-      dokumen_pendukung: row.dokumen_pendukung,
-      hasil_pertemuan: row.hasil_pertemuan,
-      tembusan: row.tembusan,
-      tempat_tanggal_surat: row.tempat_tanggal_surat,
-      nama_ttd: row.nama_ttd,
-      jabatan_ttd: row.jabatan_ttd,
+      ...row
     });
+    
+    // Parse tempat_tanggal_surat (e.g. "Bandung, 30 September 2026")
+    const parts = (row.tempat_tanggal_surat || "").split(", ");
+    setFormTempatSurat(parts[0] || "Bandung");
+    setFormTanggalSurat(""); // Clear date picker since reverse parsing is complex
     setIsFormOpen(true);
   };
 
@@ -125,12 +124,27 @@ export default function UndanganPage() {
       setFormError("Kolom Acara dan Tanggal Acara wajib diisi.");
       return;
     }
+    
+    // Merge tempat and tanggal surat
+    const combinedTempatTanggal = formTanggalSurat 
+      ? `${formTempatSurat}, ${formatDateFullIndo(formTanggalSurat)}` 
+      : formData.tempat_tanggal_surat || formTempatSurat;
+      
+    const payload = {
+      ...formData,
+      tempat_tanggal_surat: combinedTempatTanggal
+    };
+    
     try {
       if (editingId) {
-        await undanganService.update(editingId, formData, currentAdmin?.id_admin || 1);
+        await undanganService.update(editingId, payload, currentAdmin?.id_admin || 1);
       } else {
-        await undanganService.create(formData, currentAdmin?.id_admin || 1);
+        await undanganService.create(payload, currentAdmin?.id_admin || 1);
       }
+      
+      localStorage.setItem("mykwitansi_undangan_nama_ttd", formData.nama_ttd);
+      localStorage.setItem("mykwitansi_undangan_jabatan_ttd", formData.jabatan_ttd);
+      
       setIsFormOpen(false);
       loadData();
     } catch (err: any) {
@@ -197,7 +211,7 @@ export default function UndanganPage() {
           {currentData.map((row) => (
             <tr key={row.id_formulir_undangan} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
               <Td>{formatDocumentNumber(row.id_data_undangan)}</Td>
-              <Td>{row.tanggal_acara}</Td>
+              <Td>{row.tanggal_acara.includes("-") ? formatDateFullIndo(row.tanggal_acara) : row.tanggal_acara}</Td>
               <Td>{row.tanggal_input.substring(0, 10)}</Td>
               <Td className={`font-semibold ${row.admin_username === "Bang Karir" ? "text-brand-600" : "text-brand-800"}`}>
                 {formatAdminName(row.admin_username)}
@@ -247,8 +261,8 @@ export default function UndanganPage() {
           </div>
 
           <div className="grid grid-cols-3 gap-4">
-            <FormField label="Hari/Tanggal" error={formError && !formData.tanggal_acara ? "Wajib diisi" : undefined}>
-              <input type="text" className="input-field" value={formData.tanggal_acara} onChange={(e) => setFormData({ ...formData, tanggal_acara: e.target.value })} placeholder="Contoh: Rabu, 30 September 2026" />
+            <FormField label="Hari/Tanggal Acara" error={formError && !formData.tanggal_acara ? "Wajib diisi" : undefined}>
+              <input type="date" className="input-field" value={formData.tanggal_acara.includes("-") ? formData.tanggal_acara : ""} onChange={(e) => setFormData({ ...formData, tanggal_acara: e.target.value })} />
             </FormField>
             <FormField label="Waktu">
               <input type="text" className="input-field" value={formData.waktu} onChange={(e) => setFormData({ ...formData, waktu: e.target.value })} placeholder="Contoh: 08.30 - 16.00 WIB" />
@@ -279,9 +293,12 @@ export default function UndanganPage() {
             <input type="text" className="input-field" value={formData.tembusan} onChange={(e) => setFormData({ ...formData, tembusan: e.target.value })} />
           </FormField>
 
-          <div className="border-t border-gray-100 pt-4 mt-4 grid grid-cols-3 gap-4">
-            <FormField label="Tempat, Tgl Surat">
-              <input type="text" className="input-field" value={formData.tempat_tanggal_surat} onChange={(e) => setFormData({ ...formData, tempat_tanggal_surat: e.target.value })} placeholder="Bandung, 30 Sep 2026" />
+          <div className="border-t border-gray-100 pt-4 mt-4 grid grid-cols-4 gap-4">
+            <FormField label="Tempat Surat">
+              <input type="text" className="input-field" value={formTempatSurat} onChange={(e) => setFormTempatSurat(e.target.value)} placeholder="Contoh: Bandung" />
+            </FormField>
+            <FormField label="Tanggal Surat">
+              <input type="date" className="input-field" value={formTanggalSurat} onChange={(e) => setFormTanggalSurat(e.target.value)} />
             </FormField>
             <FormField label="Nama TTD">
               <input type="text" className="input-field" value={formData.nama_ttd} onChange={(e) => setFormData({ ...formData, nama_ttd: e.target.value })} />

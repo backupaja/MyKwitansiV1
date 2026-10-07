@@ -81,3 +81,19 @@ export function formatDateInput(dateString: string | undefined): string {
     return dateString;
   }
 }
+/** Formats a date string into full Indonesian date (e.g. "Rabu, 30 September 2026") */
+export function formatDateFullIndo(dateString: string | undefined): string {
+  if (!dateString) return "-";
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return dateString;
+    return d.toLocaleDateString("id-ID", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+  } catch {
+    return dateString;
+  }
+}
