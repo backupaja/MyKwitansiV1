@@ -97,3 +97,18 @@ export function formatDateFullIndo(dateString: string | undefined): string {
     return dateString;
   }
 }
+/** Formats a date string into Indonesian date WITHOUT weekday (e.g. "30 September 2026") */
+export function formatDateNoDay(dateString: string | undefined): string {
+  if (!dateString) return "-";
+  try {
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return dateString;
+    return d.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+  } catch {
+    return dateString;
+  }
+}

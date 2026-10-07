@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { tokens } from "../styles/tokens";
 import { Ico } from "../utils/icons";
 import { formatAdminName, formatDocumentNumber, formatDateFullIndo } from "../utils/formatters";
@@ -11,6 +11,8 @@ import { useAuth } from "../contexts/AuthContext";
 import type { DataUndanganView, CreateFormulirUndanganInput } from "../types";
 
 const { color } = tokens;
+
+const PdfPreview = lazy(() => import("../components/PdfPreview"));
 
 const HEADERS = [
   "No. Undangan",
@@ -26,14 +28,16 @@ const EMPTY_FORM: CreateFormulirUndanganInput = {
   acara: "",
   penyelenggara: "",
   tanggal_acara: "",
-  waktu: "",
-  tempat: "",
+  waktu_mulai: "",
+  waktu_selesai: "",
+  tempat_acara: "",
   agenda: "",
   peserta: "",
   dokumen_pendukung: "",
   hasil_pertemuan: "",
   tembusan: "",
-  tempat_tanggal_surat: "",
+  tempat_surat: "",
+  tanggal_surat: "",
   nama_ttd: "",
   jabatan_ttd: "",
 };
@@ -53,14 +57,43 @@ export default function UndanganPage() {
   // Form modal state
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formError, setFormError] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<CreateFormulirUndanganInput>(EMPTY_FORM);
-  const [formTempatSurat, setFormTempatSurat] = useState("Bandung");
-  const [formTanggalSurat, setFormTanggalSurat] = useState("");
 
   // Delete modal state
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DataUndanganView | null>(null);
+
+  // Selection state for bulk actions
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === currentData.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(currentData.map(r => r.id_formulir_undangan)));
+    }
+  };
+
+  const selectedRows = rows.filter(r => selectedIds.has(r.id_formulir_undangan));
+
+  const handleBulkDownload = async () => {
+    if (selectedRows.length === 0) return;
+    await pdfService.downloadMultipleUndanganPdf(selectedRows);
+  };
+
+  const handleBulkPrint = async () => {
+    if (selectedRows.length === 0) return;
+    await pdfService.printMultipleUndanganPdf(selectedRows);
+  };
 
   // View modal state
   const [viewTarget, setViewTarget] = useState<DataUndanganView | null>(null);
@@ -85,7 +118,7 @@ export default function UndanganPage() {
   // Filter & pagination
   const filtered = rows.filter((r) => {
     const q = search.toLowerCase();
-    return [r.acara, r.tempat, r.penyelenggara].some((v) => v?.toLowerCase().includes(q));
+    return [r.acara, r.tempat_acara, r.penyelenggara].some((v) => v?.toLowerCase().includes(q));
   });
   const totalPages = Math.ceil(filtered.length / pageSize);
   const currentData = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -101,9 +134,8 @@ export default function UndanganPage() {
       ...EMPTY_FORM,
       nama_ttd: localStorage.getItem("mykwitansi_undangan_nama_ttd") || "",
       jabatan_ttd: localStorage.getItem("mykwitansi_undangan_jabatan_ttd") || "",
+      tempat_surat: "Bandung"
     });
-    setFormTempatSurat("Bandung");
-    setFormTanggalSurat("");
     setIsFormOpen(true);
   };
 
@@ -113,37 +145,36 @@ export default function UndanganPage() {
     setFormData({
       ...row
     });
-    
-    // Parse tempat_tanggal_surat (e.g. "Bandung, 30 September 2026")
-    const parts = (row.tempat_tanggal_surat || "").split(", ");
-    setFormTempatSurat(parts[0] || "Bandung");
-    setFormTanggalSurat(""); // Clear date picker since reverse parsing is complex
     setIsFormOpen(true);
   };
 
   const handleFormSubmit = async () => {
-    if (!formData.acara || !formData.tanggal_acara) {
-      const msg = "Kolom Acara dan Tanggal Acara wajib diisi!";
+    if (!formData.acara || !formData.tanggal_acara || !formData.waktu_mulai || !formData.waktu_selesai || !formData.tempat_acara) {
+      const msg = "Kolom Acara, Tanggal, Waktu Mulai, Waktu Selesai, dan Tempat wajib diisi!";
       setFormError(msg);
       alert(msg);
       return;
     }
     
-    // Merge tempat and tanggal surat
-    const combinedTempatTanggal = formTanggalSurat 
-      ? `${formTempatSurat}, ${formatDateFullIndo(formTanggalSurat)}` 
-      : formData.tempat_tanggal_surat || formTempatSurat;
-      
-    const payload = {
-      ...formData,
-      tempat_tanggal_surat: combinedTempatTanggal
-    };
+    if (formData.waktu_selesai < formData.waktu_mulai) {
+      const msg = "Waktu selesai tidak boleh lebih awal dari waktu mulai!";
+      setFormError(msg);
+      alert(msg);
+      return;
+    }
+    
+    if (!currentAdmin?.id_admin) {
+      const msg = "Anda harus login untuk menyimpan data!";
+      setFormError(msg);
+      alert(msg);
+      return;
+    }
     
     try {
       if (editingId) {
-        await undanganService.update(editingId, payload, currentAdmin?.id_admin || 1);
+        await undanganService.update(editingId, formData, currentAdmin.id_admin);
       } else {
-        await undanganService.create(payload, currentAdmin?.id_admin || 1);
+        await undanganService.create(formData, currentAdmin.id_admin);
       }
       
       localStorage.setItem("mykwitansi_undangan_nama_ttd", formData.nama_ttd);
@@ -154,6 +185,25 @@ export default function UndanganPage() {
     } catch (err: any) {
       setFormError(err.message || "Gagal menyimpan data");
     }
+  };
+
+  const fillDummyData = () => {
+    setFormData({
+      ...formData,
+      acara: "Rapat Koordinasi Tim Pengembang",
+      penyelenggara: "Bagian IT Telkom University",
+      tanggal_acara: new Date().toISOString().substring(0, 10),
+      waktu_mulai: "09:00",
+      waktu_selesai: "11:30",
+      tempat_acara: "Ruang Rapat Gedung Tokong Nanas",
+      agenda: "Membahas progres migrasi server dan pembaruan UI aplikasi internal",
+      peserta: "Seluruh Anggota Tim IT, Manajer Proyek",
+      dokumen_pendukung: "Laporan Sprint 4",
+      hasil_pertemuan: "-",
+      tembusan: "Direktur IT",
+      tempat_surat: "Bandung",
+      tanggal_surat: new Date().toISOString().substring(0, 10),
+    });
   };
 
   // Delete handlers
@@ -190,9 +240,30 @@ export default function UndanganPage() {
       <Card className="p-5">
         <CardToolbar
           left={
-            <PrimaryBtn onClick={openCreate}>
-              + Tambah Undangan
-            </PrimaryBtn>
+            <div className="flex gap-2 w-full overflow-x-auto pb-1" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+              <PrimaryBtn onClick={openCreate} className="flex-shrink-0">
+                {Ico.plus()} Buat Undangan
+              </PrimaryBtn>
+              
+              <div className="hidden md:block flex-shrink-0">
+                <PrimaryBtn onClick={handleBulkPrint} disabled={selectedIds.size === 0} className="flex-shrink-0">
+                  {Ico.print()} Print Undangan{selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
+                </PrimaryBtn>
+              </div>
+              <div className="block md:hidden flex-shrink-0">
+                <PrimaryBtn disabled={true} className="opacity-50 cursor-not-allowed flex-shrink-0">
+                  {Ico.print()} Print{selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
+                </PrimaryBtn>
+              </div>
+
+              <PrimaryBtn 
+                onClick={handleBulkDownload}
+                disabled={selectedIds.size === 0}
+                className="!bg-blue-400 hover:!bg-blue-500 !border-blue-400 text-white flex-shrink-0"
+              >
+                {Ico.download()} Save PDF{selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
+              </PrimaryBtn>
+            </div>
           }
           right={
             <TableControls
@@ -211,32 +282,83 @@ export default function UndanganPage() {
           currentPage={page}
           totalPages={totalPages}
           onPageChange={setPage}
+          showLeadingColumn
+          leadingHeader={
+            <input
+              type="checkbox"
+              title="Pilih semua"
+              checked={currentData.length > 0 && currentData.every((n) => selectedIds.has(n.id_formulir_undangan))}
+              onChange={toggleSelectAll}
+            />
+          }
         >
-          {currentData.map((row) => (
-            <tr key={row.id_formulir_undangan} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-              <Td>{formatDocumentNumber(row.id_data_undangan)}</Td>
-              <Td>{row.tanggal_acara.includes("-") ? formatDateFullIndo(row.tanggal_acara) : row.tanggal_acara}</Td>
-              <Td>{row.tanggal_input.substring(0, 10)}</Td>
-              <Td className={`font-semibold ${row.admin_username === "Bang Karir" ? "text-brand-600" : "text-brand-800"}`}>
-                {formatAdminName(row.admin_username)}
-              </Td>
-              <Td>{row.acara}</Td>
-              <Td>{row.tempat}</Td>
+          {currentData.map((row, index) => {
+            const visualId = filtered.length - ((page - 1) * pageSize + index);
+            return (
+            <tr 
+              key={row.id_formulir_undangan} 
+              className="tr-hover cursor-pointer"
+              onClick={() => setViewTarget(row)}
+            >
+              <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(row.id_formulir_undangan)}
+                  onChange={() => toggleSelect(row.id_formulir_undangan)}
+                />
+              </td>
+              <Td><span className="whitespace-nowrap">{formatDocumentNumber(visualId)}</span></Td>
+              <Td><span className="whitespace-nowrap">{row.tanggal_acara.includes("-") ? formatDateFullIndo(row.tanggal_acara) : row.tanggal_acara}</span></Td>
+              <Td><span className="whitespace-nowrap">{row.tanggal_input.substring(0, 10)}</span></Td>
               <Td>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setViewTarget(row)} className="p-1.5 text-gray-500 hover:text-brand-600 border border-gray-200 rounded hover:border-brand-600 transition-colors" title="Lihat">
-                    {Ico.eye()}
+                <span className={`font-semibold whitespace-nowrap ${row.admin_username === "Bang Karir" ? "text-brand-600" : "text-brand-800"}`}>
+                  {formatAdminName(row.admin_username)}
+                </span>
+              </Td>
+              <Td>
+                <span className="block max-w-[200px] truncate" title={row.acara}>{row.acara}</span>
+              </Td>
+              <Td>
+                <span className="block max-w-[160px] truncate" title={row.tempat_acara}>{row.tempat_acara}</span>
+              </Td>
+              <td className="px-4 py-3.5 text-center whitespace-nowrap">
+                <div className="flex items-center gap-1.5 justify-center">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setViewTarget(row); }}
+                    title="Lihat Undangan"
+                    className="inline-flex items-center justify-center p-1.5 rounded-md text-xs font-semibold
+                      border transition-colors duration-100"
+                    style={{ color: "#374151", borderColor: "#e5e7eb", background: "transparent" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#f3f4f6"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    {Ico.receipt()}
                   </button>
-                  <button onClick={() => openEdit(row)} className="p-1.5 text-gray-500 hover:text-brand-600 border border-gray-200 rounded hover:border-brand-600 transition-colors" title="Edit">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); openEdit(row); }}
+                    title="Edit Undangan"
+                    className="inline-flex items-center justify-center p-1.5 rounded-md text-xs font-semibold
+                      border transition-colors duration-100"
+                    style={{ color: color.brand, borderColor: color.brand, background: "transparent" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = color.brandSoft; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                  >
                     {Ico.edit()}
                   </button>
-                  <button onClick={() => openDelete(row)} className="p-1.5 text-red-500 hover:text-red-700 border border-gray-200 rounded hover:border-red-500 transition-colors" title="Hapus">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); openDelete(row); }}
+                    title="Hapus Undangan"
+                    className="inline-flex items-center justify-center p-1.5 rounded-md text-xs font-semibold
+                      border border-red-200 text-red-600 bg-transparent transition-colors duration-100
+                      hover:bg-red-50"
+                  >
                     {Ico.trash()}
                   </button>
                 </div>
-              </Td>
+              </td>
             </tr>
-          ))}
+            );
+          })}
           {currentData.length === 0 && (
             <tr>
               <td colSpan={HEADERS.length} className="px-4 py-10 text-center text-sm text-gray-400">
@@ -256,71 +378,53 @@ export default function UndanganPage() {
         >
           <div className="space-y-4 pt-4">
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Acara" error={formError && !formData.acara ? "Wajib diisi" : undefined}>
-              <input type="text" className="input-field" value={formData.acara} onChange={(e) => setFormData({ ...formData, acara: e.target.value })} />
-            </FormField>
-            <FormField label="Penyelenggara">
-              <input type="text" className="input-field" value={formData.penyelenggara} onChange={(e) => setFormData({ ...formData, penyelenggara: e.target.value })} />
-            </FormField>
+            <FormField label="Acara" value={formData.acara} onChange={(val) => setFormData({ ...formData, acara: val })} error={formError && !formData.acara ? "Wajib diisi" : undefined} />
+            <FormField label="Penyelenggara" value={formData.penyelenggara} onChange={(val) => setFormData({ ...formData, penyelenggara: val })} />
           </div>
 
           <div className="grid grid-cols-3 gap-4">
-            <FormField label="Hari/Tanggal Acara" error={formError && !formData.tanggal_acara ? "Wajib diisi" : undefined}>
-              <input type="date" className="input-field" value={formData.tanggal_acara.includes("-") ? formData.tanggal_acara : ""} onChange={(e) => setFormData({ ...formData, tanggal_acara: e.target.value })} />
-            </FormField>
-            <FormField label="Waktu">
-              <input type="text" className="input-field" value={formData.waktu} onChange={(e) => setFormData({ ...formData, waktu: e.target.value })} placeholder="Contoh: 08.30 - 16.00 WIB" />
-            </FormField>
-            <FormField label="Tempat">
-              <input type="text" className="input-field" value={formData.tempat} onChange={(e) => setFormData({ ...formData, tempat: e.target.value })} />
-            </FormField>
+            <FormField label="Hari/Tanggal Acara" type="date" value={formData.tanggal_acara.includes("-") ? formData.tanggal_acara : ""} onChange={(val) => setFormData({ ...formData, tanggal_acara: val })} error={formError && !formData.tanggal_acara ? "Wajib diisi" : undefined} />
+            <FormField label="Waktu Mulai" type="time" value={formData.waktu_mulai} onChange={(val) => setFormData({ ...formData, waktu_mulai: val })} />
+            <FormField label="Waktu Selesai" type="time" value={formData.waktu_selesai} onChange={(val) => setFormData({ ...formData, waktu_selesai: val })} />
           </div>
+          
+          <FormField label="Tempat" value={formData.tempat_acara} onChange={(val) => setFormData({ ...formData, tempat_acara: val })} />
 
-          <FormField label="Agenda">
-            <textarea className="input-field py-2" rows={2} value={formData.agenda} onChange={(e) => setFormData({ ...formData, agenda: e.target.value })} />
-          </FormField>
+          <FormField label="Agenda" type="textarea" value={formData.agenda} onChange={(val) => setFormData({ ...formData, agenda: val })} />
 
-          <FormField label="Peserta">
-            <textarea className="input-field py-2" rows={2} value={formData.peserta} onChange={(e) => setFormData({ ...formData, peserta: e.target.value })} />
-          </FormField>
+          <FormField label="Peserta" type="textarea" value={formData.peserta} onChange={(val) => setFormData({ ...formData, peserta: val })} />
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField label="Dokumen Pendukung">
-              <input type="text" className="input-field" value={formData.dokumen_pendukung} onChange={(e) => setFormData({ ...formData, dokumen_pendukung: e.target.value })} />
-            </FormField>
-            <FormField label="Hasil Pertemuan">
-              <input type="text" className="input-field" value={formData.hasil_pertemuan} onChange={(e) => setFormData({ ...formData, hasil_pertemuan: e.target.value })} />
-            </FormField>
+            <FormField label="Dokumen Pendukung" value={formData.dokumen_pendukung} onChange={(val) => setFormData({ ...formData, dokumen_pendukung: val })} />
+            <FormField label="Hasil Pertemuan" value={formData.hasil_pertemuan} onChange={(val) => setFormData({ ...formData, hasil_pertemuan: val })} />
           </div>
 
-          <FormField label="Tembusan">
-            <input type="text" className="input-field" value={formData.tembusan} onChange={(e) => setFormData({ ...formData, tembusan: e.target.value })} />
-          </FormField>
+          <FormField label="Tembusan" value={formData.tembusan} onChange={(val) => setFormData({ ...formData, tembusan: val })} />
 
           <div className="border-t border-gray-100 pt-4 mt-4 grid grid-cols-4 gap-4">
-            <FormField label="Tempat Surat">
-              <input type="text" className="input-field" value={formTempatSurat} onChange={(e) => setFormTempatSurat(e.target.value)} placeholder="Contoh: Bandung" />
-            </FormField>
-            <FormField label="Tanggal Surat">
-              <input type="date" className="input-field" value={formTanggalSurat} onChange={(e) => setFormTanggalSurat(e.target.value)} />
-            </FormField>
-            <FormField label="Nama TTD">
-              <input type="text" className="input-field" value={formData.nama_ttd} onChange={(e) => setFormData({ ...formData, nama_ttd: e.target.value })} />
-            </FormField>
-            <FormField label="Jabatan TTD">
-              <input type="text" className="input-field" value={formData.jabatan_ttd} onChange={(e) => setFormData({ ...formData, jabatan_ttd: e.target.value })} />
-            </FormField>
+            <FormField label="Tempat Surat" value={formData.tempat_surat} onChange={(val) => setFormData({ ...formData, tempat_surat: val })} placeholder="Contoh: Bandung" />
+            <FormField label="Tanggal Surat" type="date" value={formData.tanggal_surat.includes("-") ? formData.tanggal_surat : ""} onChange={(val) => setFormData({ ...formData, tanggal_surat: val })} />
+            <FormField label="Nama TTD" value={formData.nama_ttd} onChange={(val) => setFormData({ ...formData, nama_ttd: val })} />
+            <FormField label="Jabatan TTD" value={formData.jabatan_ttd} onChange={(val) => setFormData({ ...formData, jabatan_ttd: val })} />
           </div>
 
           {formError && (
             <div className="text-red-500 text-sm font-medium">{formError}</div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-            <OutlineBtn onClick={() => setIsFormOpen(false)}>Batal</OutlineBtn>
-            <PrimaryBtn onClick={handleFormSubmit}>
-              {editingId ? "Simpan Perubahan" : "Simpan Data"}
-            </PrimaryBtn>
+          <div className="flex justify-between pt-4 border-t border-gray-100">
+            <button
+              onClick={fillDummyData}
+              className="px-3 py-1.5 text-xs font-semibold text-brand-600 bg-brand-50 hover:bg-brand-100 rounded transition-colors"
+            >
+              Isi Dummy Data
+            </button>
+            <div className="flex gap-3">
+              <OutlineBtn onClick={() => setIsFormOpen(false)}>Batal</OutlineBtn>
+              <PrimaryBtn onClick={handleFormSubmit}>
+                {editingId ? "Simpan Perubahan" : "Simpan Data"}
+              </PrimaryBtn>
+            </div>
           </div>
         </div>
         </Modal>
@@ -356,54 +460,14 @@ export default function UndanganPage() {
           title="Preview Undangan"
           wide
         >
-          <div>
-            <div className="p-8 border border-gray-200 mt-4 bg-white min-h-[400px]">
-              <div className="flex justify-between items-center border-b-2 border-black pb-4 mb-4">
-                <div className="text-xl font-bold tracking-widest text-brand-700">TELKOM UNIVERSITY</div>
-                <div className="text-xl font-bold tracking-[0.3em]">U N D A N G A N</div>
-              </div>
-              <table className="w-full text-sm border-collapse border border-black mb-8">
-                <tbody>
-                  <tr>
-                    <td className="border border-black p-2 font-bold w-1/3">Acara:</td>
-                    <td className="border border-black p-2">{viewTarget.acara}</td>
-                    <td className="border border-black p-2 font-bold w-1/4">Penyelenggara:</td>
-                    <td className="border border-black p-2">{viewTarget.penyelenggara}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-black p-2 font-bold">Hari/Tanggal:</td>
-                    <td className="border border-black p-2">{viewTarget.tanggal_acara}</td>
-                    <td className="border border-black p-2 font-bold">Waktu:</td>
-                    <td className="border border-black p-2">{viewTarget.waktu}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-black p-2 font-bold">Tempat:</td>
-                    <td className="border border-black p-2" colSpan={3}>{viewTarget.tempat}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-black p-2 font-bold">Agenda:</td>
-                    <td className="border border-black p-2" colSpan={3}>{viewTarget.agenda}</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-black p-2 font-bold">Peserta:</td>
-                    <td className="border border-black p-2" colSpan={3}>{viewTarget.peserta}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div className="flex justify-between mt-12">
-                <div className="text-sm">
-                  <div className="font-bold">Tembusan:</div>
-                  <div>{viewTarget.tembusan}</div>
-                </div>
-                <div className="text-sm text-center">
-                  <div>{viewTarget.tempat_tanggal_surat}</div>
-                  <div className="mt-16 font-bold underline">{viewTarget.nama_ttd}</div>
-                  <div className="font-bold">{viewTarget.jabatan_ttd}</div>
-                </div>
-              </div>
+          <div className="h-[75vh] mt-4 flex flex-col">
+            <div className="flex-1 border border-gray-200">
+              <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-500">Memuat Preview PDF...</div>}>
+                <PdfPreview data={viewTarget} />
+              </Suspense>
             </div>
             
-            <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-gray-100">
+            <div className="mt-4 flex justify-end gap-3 pt-4 border-t border-gray-100 shrink-0">
               <OutlineBtn onClick={() => setViewTarget(null)}>Tutup</OutlineBtn>
               <OutlineBtn onClick={handleDownloadPdf}>
                 {Ico.download()} Download PDF

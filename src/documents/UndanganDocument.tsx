@@ -1,112 +1,88 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, Font, Image } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image, Font } from "@react-pdf/renderer";
 import type { DataUndanganView } from "../types";
-import { formatDateFullIndo } from "../utils/formatters";
-
-// Register fonts if not already registered in pdfService, or assume they are.
-// Usually pdfService registers them, but if we need bold we must ensure it's available.
-// We will use standard Helvetica for simplicity, or the ones already registered.
+import { formatDateFullIndo, formatDateNoDay } from "../utils/formatters";
+import { telkomLogo } from "../assets/telkomLogoBase64";
 
 const styles = StyleSheet.create({
   page: {
     paddingTop: 40,
     paddingBottom: 40,
-    paddingLeft: 50,
-    paddingRight: 50,
-    fontFamily: "Helvetica",
+    paddingLeft: 40,
+    paddingRight: 40,
+    fontFamily: "Courier",
+    fontSize: 10,
+    lineHeight: 1.2,
   },
-  headerTable: {
-    flexDirection: "row",
-    borderWidth: 1,
+  table: {
+    width: "100%",
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
     borderColor: "#000",
-    marginBottom: 0,
+    flexDirection: "column",
   },
-  logoTextContainer: {
-    flex: 1,
-    padding: 10,
+  row: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#000",
+  },
+  headerRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#000",
+    minHeight: 80,
+  },
+  cellLogo: {
+    width: "60%",
     borderRightWidth: 1,
-    borderRightColor: "#000",
+    borderColor: "#000",
     justifyContent: "center",
     alignItems: "center",
+    padding: 8,
   },
-  logoText1: {
-    fontSize: 24,
-    fontFamily: "Helvetica-Bold",
-    color: "#b91c1c", // red
+  logoImage: {
+    width: 190,
+    height: 63,
   },
-  logoText2: {
-    fontSize: 14,
-    fontFamily: "Helvetica",
-  },
-  headerRight: {
-    flex: 1,
-    padding: 10,
+  cellTitle: {
+    width: "40%",
+    borderRightWidth: 1,
+    borderColor: "#000",
     justifyContent: "center",
     alignItems: "center",
   },
   titleText: {
-    fontSize: 18,
     fontFamily: "Helvetica-Bold",
+    fontSize: 16,
     letterSpacing: 4,
-  },
-  row: {
-    flexDirection: "row",
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: "#000",
-  },
-  colHalf: {
-    flex: 1,
-    padding: 6,
-  },
-  colFull: {
-    flex: 1,
-    padding: 6,
-  },
-  borderRight: {
-    borderRightWidth: 1,
-    borderRightColor: "#000",
-  },
-  labelText: {
-    fontSize: 10,
-    fontFamily: "Helvetica-Bold",
-  },
-  valueText: {
-    fontSize: 10,
-    marginTop: 4,
-  },
-  footerRow: {
-    flexDirection: "row",
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: "#000",
-    minHeight: 120, // To give space for signatures
-  },
-  footerColLeft: {
-    flex: 1,
-    padding: 4,
-    borderRightWidth: 1,
-    borderRightColor: "#000",
-  },
-  footerColRight: {
-    flex: 1,
-    padding: 4,
-    alignItems: "center", // center the signature
-  },
-  signatureDate: {
-    fontSize: 10,
-    marginBottom: 40, // Space for signature
-  },
-  signatureName: {
-    fontSize: 10,
-    fontFamily: "Helvetica-Bold",
     textDecoration: "underline",
   },
+  col1: { width: "35%", borderRightWidth: 1, borderColor: "#000", padding: 5 },
+  col2: { width: "25%", borderRightWidth: 1, borderColor: "#000", padding: 5 },
+  col3: { width: "40%", borderRightWidth: 1, borderColor: "#000", padding: 5 },
+  col1_2: { width: "60%", borderRightWidth: 1, borderColor: "#000", padding: 5 },
+  colAll: { width: "100%", borderRightWidth: 1, borderColor: "#000", padding: 5 },
+  
+  labelText: {
+    fontFamily: "Courier-Bold",
+  },
+  valueText: {
+    fontFamily: "Courier",
+  },
+  signatureContainer: {
+    marginTop: 0,
+    alignItems: "center",
+  },
+  signatureDate: {
+    marginBottom: 35,
+  },
+  signatureName: {
+    fontFamily: "Courier-Bold",
+    textDecoration: "underline",
+    flexShrink: 1,
+  },
   signatureTitle: {
-    fontSize: 10,
-    fontFamily: "Helvetica-Bold",
+    fontFamily: "Courier-Bold",
   }
 });
 
@@ -118,94 +94,179 @@ export function UndanganDocument({ data }: Props) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        
-        {/* Header Table */}
-        <View style={styles.headerTable}>
-          <View style={styles.logoTextContainer}>
-            <Text style={styles.logoText1}>Telkom</Text>
-            <Text style={styles.logoText2}>University</Text>
+        <View style={styles.table}>
+          
+          {/* Header Row */}
+          <View style={styles.headerRow}>
+            <View style={styles.cellLogo}>
+              {/* Telkom University Logo embedded */}
+              <Image src={telkomLogo} style={styles.logoImage} />
+            </View>
+            <View style={styles.cellTitle}>
+              <Text style={styles.titleText}>U N D A N G A N</Text>
+            </View>
           </View>
-          <View style={styles.headerRight}>
-            <Text style={styles.titleText}>U N D A N G A N</Text>
-          </View>
-        </View>
 
-        {/* Row 1: Acara & Penyelenggara */}
-        <View style={styles.row}>
-          <View style={[styles.colHalf, styles.borderRight]}>
-            <Text style={styles.labelText}>Acara:</Text>
-            <Text style={styles.valueText}>{data.acara}</Text>
+          {/* Row 1: Acara & Penyelenggara (Inline) */}
+          <View style={styles.row}>
+            <View style={styles.col1_2}>
+              <Text><Text style={styles.labelText}>Acara:  </Text>{data.acara}</Text>
+            </View>
+            <View style={styles.col3}>
+              <Text><Text style={styles.labelText}>Penyelenggara:</Text></Text>
+              <Text>{data.penyelenggara}</Text>
+            </View>
           </View>
-          <View style={styles.colHalf}>
-            <Text style={styles.labelText}>Penyelenggara:</Text>
-            <Text style={styles.valueText}>{data.penyelenggara}</Text>
-          </View>
-        </View>
 
-        {/* Row 2: Hari/Tanggal, Waktu, Tempat */}
-        <View style={styles.row}>
-          <View style={[styles.colHalf, styles.borderRight, { flex: 0.8 }]}>
-            <Text style={styles.labelText}>Hari/Tanggal:</Text>
-            <Text style={styles.valueText}>
-              {data.tanggal_acara.includes("-") ? formatDateFullIndo(data.tanggal_acara) : data.tanggal_acara}
-            </Text>
+          {/* Row 2: Hari/Tanggal, Waktu, Tempat (Block) */}
+          <View style={styles.row}>
+            <View style={styles.col1}>
+              <Text style={styles.labelText}>Hari/Tanggal:</Text>
+              <Text style={styles.valueText}>
+                {data.tanggal_acara.includes("-") ? formatDateFullIndo(data.tanggal_acara) : data.tanggal_acara}
+              </Text>
+            </View>
+            <View style={styles.col2}>
+              <Text style={styles.labelText}>Waktu:</Text>
+              <Text style={styles.valueText}>{data.waktu_mulai.substring(0, 5)} - {data.waktu_selesai.substring(0, 5)}</Text>
+              <Text style={styles.valueText}>WIB</Text>
+            </View>
+            <View style={styles.col3}>
+              <Text style={styles.labelText}>Tempat:</Text>
+              <Text style={styles.valueText}>{data.tempat_acara}</Text>
+            </View>
           </View>
-          <View style={[styles.colHalf, styles.borderRight, { flex: 0.6 }]}>
-            <Text style={styles.labelText}>Waktu:</Text>
-            <Text style={styles.valueText}>{data.waktu}</Text>
-          </View>
-          <View style={styles.colHalf}>
-            <Text style={styles.labelText}>Tempat:</Text>
-            <Text style={styles.valueText}>{data.tempat}</Text>
-          </View>
-        </View>
 
-        {/* Row 3: Agenda */}
-        <View style={styles.row}>
-          <View style={styles.colFull}>
-            <Text style={styles.labelText}>Agenda:</Text>
-            <Text style={styles.valueText}>{data.agenda}</Text>
+          {/* Row 3: Agenda (Inline) */}
+          <View style={styles.row}>
+            <View style={styles.colAll}>
+              <Text><Text style={styles.labelText}>Agenda:  </Text>{data.agenda}</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Row 4: Peserta */}
-        <View style={styles.row}>
-          <View style={styles.colFull}>
-            <Text style={styles.labelText}>Peserta:</Text>
-            <Text style={styles.valueText}>{data.peserta}</Text>
+          {/* Row 4: Peserta (Inline) */}
+          <View style={styles.row}>
+            <View style={styles.colAll}>
+              <Text><Text style={styles.labelText}>Peserta:  </Text>{data.peserta}</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Row 5: Dokumen Pendukung */}
-        <View style={styles.row}>
-          <View style={styles.colFull}>
-            <Text style={styles.labelText}>Dokumen Pendukung:</Text>
-            <Text style={styles.valueText}>{data.dokumen_pendukung}</Text>
+          {/* Row 5: Dokumen Pendukung (Inline) */}
+          <View style={styles.row}>
+            <View style={styles.colAll}>
+              <Text><Text style={styles.labelText}>Dokumen Pendukung:  </Text>{data.dokumen_pendukung}</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Row 6: Hasil Pertemuan */}
-        <View style={styles.row}>
-          <View style={styles.colFull}>
-            <Text style={styles.labelText}>Hasil Pertemuan:</Text>
-            <Text style={styles.valueText}>{data.hasil_pertemuan}</Text>
+          {/* Row 6: Hasil Pertemuan (Inline) */}
+          <View style={styles.row}>
+            <View style={styles.colAll}>
+              <Text><Text style={styles.labelText}>Hasil Pertemuan:  </Text>{data.hasil_pertemuan}</Text>
+            </View>
           </View>
-        </View>
 
-        {/* Row 7: Tembusan & Signature */}
-        <View style={styles.footerRow}>
-          <View style={styles.footerColLeft}>
-            <Text style={styles.labelText}>Tembusan:</Text>
-            <Text style={styles.valueText}>{data.tembusan}</Text>
+          {/* Row 7: Tembusan & Tanda Tangan */}
+          <View style={[styles.row, { minHeight: 120 }]}>
+            <View style={styles.col1_2}>
+              <Text><Text style={styles.labelText}>Tembusan:  </Text>{data.tembusan}</Text>
+            </View>
+            <View style={[styles.col3, { justifyContent: 'space-between', paddingTop: 8, paddingBottom: 10, flex: 1 }]}>
+              {/* Tanggal di atas */}
+              <Text style={[styles.signatureDate, { marginBottom: 0, textAlign: 'center' }]}>
+                {data.tempat_surat}, {data.tanggal_surat && data.tanggal_surat.includes("-") ? formatDateNoDay(data.tanggal_surat) : data.tanggal_surat}
+              </Text>
+              {/* Nama & jabatan di bawah */}
+              <View style={styles.signatureContainer}>
+                <Text style={[styles.signatureName, { fontSize: data.nama_ttd && data.nama_ttd.length > 25 ? 7.5 : 10 }]}>{data.nama_ttd}</Text>
+                <Text style={styles.signatureTitle}>{data.jabatan_ttd}</Text>
+              </View>
+            </View>
           </View>
-          <View style={styles.footerColRight}>
-            <Text style={styles.signatureDate}>{data.tempat_tanggal_surat}</Text>
-            <Text style={styles.signatureName}>{data.nama_ttd}</Text>
-            <Text style={styles.signatureTitle}>{data.jabatan_ttd}</Text>
-          </View>
-        </View>
 
+        </View>
       </Page>
+    </Document>
+  );
+}
+
+/** Multi-page document — each undangan gets its own A4 page */
+export function MultiUndanganDocument({ items }: { items: DataUndanganView[] }) {
+  return (
+    <Document>
+      {items.map((data) => (
+        <Page key={data.id_formulir_undangan} size="A4" style={styles.page}>
+          <View style={styles.table}>
+            <View style={styles.headerRow}>
+              <View style={styles.cellLogo}>
+                <Image src={telkomLogo} style={styles.logoImage} />
+              </View>
+              <View style={styles.cellTitle}>
+                <Text style={styles.titleText}>U N D A N G A N</Text>
+              </View>
+            </View>
+            <View style={styles.row}>
+              <View style={styles.col1_2}>
+                <Text><Text style={styles.labelText}>Acara:  </Text>{data.acara}</Text>
+              </View>
+              <View style={styles.col3}>
+                <Text><Text style={styles.labelText}>Penyelenggara:</Text></Text>
+                <Text>{data.penyelenggara}</Text>
+              </View>
+            </View>
+            <View style={styles.row}>
+              <View style={styles.col1}>
+                <Text style={styles.labelText}>Hari/Tanggal:</Text>
+                <Text style={styles.valueText}>
+                  {data.tanggal_acara && data.tanggal_acara.includes("-") ? formatDateFullIndo(data.tanggal_acara) : data.tanggal_acara}
+                </Text>
+              </View>
+              <View style={styles.col2}>
+                <Text style={styles.labelText}>Waktu:</Text>
+                <Text style={styles.valueText}>{data.waktu_mulai?.substring(0, 5)} - {data.waktu_selesai?.substring(0, 5)}</Text>
+                <Text style={styles.valueText}>WIB</Text>
+              </View>
+              <View style={styles.col3}>
+                <Text style={styles.labelText}>Tempat:</Text>
+                <Text style={styles.valueText}>{data.tempat_acara}</Text>
+              </View>
+            </View>
+            <View style={styles.row}>
+              <View style={styles.colAll}>
+                <Text><Text style={styles.labelText}>Agenda:  </Text>{data.agenda}</Text>
+              </View>
+            </View>
+            <View style={styles.row}>
+              <View style={styles.colAll}>
+                <Text><Text style={styles.labelText}>Peserta:  </Text>{data.peserta}</Text>
+              </View>
+            </View>
+            <View style={styles.row}>
+              <View style={styles.colAll}>
+                <Text><Text style={styles.labelText}>Dokumen Pendukung:  </Text>{data.dokumen_pendukung}</Text>
+              </View>
+            </View>
+            <View style={styles.row}>
+              <View style={styles.colAll}>
+                <Text><Text style={styles.labelText}>Hasil Pertemuan:  </Text>{data.hasil_pertemuan}</Text>
+              </View>
+            </View>
+            <View style={[styles.row, { minHeight: 120 }]}>
+              <View style={styles.col1_2}>
+                <Text><Text style={styles.labelText}>Tembusan:  </Text>{data.tembusan}</Text>
+              </View>
+              <View style={[styles.col3, { justifyContent: 'space-between', paddingTop: 8, paddingBottom: 10, flex: 1 }]}>
+                <Text style={[styles.signatureDate, { marginBottom: 0, textAlign: 'center' }]}>
+                  {data.tempat_surat}, {data.tanggal_surat && data.tanggal_surat.includes("-") ? formatDateNoDay(data.tanggal_surat) : data.tanggal_surat}
+                </Text>
+                <View style={styles.signatureContainer}>
+                  <Text style={[styles.signatureName, { fontSize: data.nama_ttd && data.nama_ttd.length > 25 ? 7.5 : 10 }]}>{data.nama_ttd}</Text>
+                  <Text style={styles.signatureTitle}>{data.jabatan_ttd}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </Page>
+      ))}
     </Document>
   );
 }

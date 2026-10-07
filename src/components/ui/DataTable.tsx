@@ -223,7 +223,7 @@ export function DataTable({
 }) {
   return (
     <>
-      <div className="overflow-x-auto pb-4">
+      <div className="w-full pb-2">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100">

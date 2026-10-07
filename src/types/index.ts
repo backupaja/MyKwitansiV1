@@ -188,26 +188,28 @@ export interface CreateFormulirNotaInput {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface FormulirUndangan {
-  id_formulir_undangan: number;
+  id_formulir_undangan: string; // UUID
   acara:                string;
   penyelenggara:        string;
-  tanggal_acara:        string;
-  waktu:                string;
-  tempat:               string;
+  tanggal_acara:        string; // DATE
+  waktu_mulai:          string; // TIME
+  waktu_selesai:        string; // TIME
+  tempat_acara:         string;
   agenda:               string;
   peserta:              string;
   dokumen_pendukung:    string;
   hasil_pertemuan:      string;
   tembusan:             string;
-  tempat_tanggal_surat: string;
+  tempat_surat:         string;
+  tanggal_surat:        string; // DATE
   nama_ttd:             string;
   jabatan_ttd:          string;
-  tanggal_input:        string; // ISO 8601
+  tanggal_input:        string; // ISO 8601 (mapped from created_at)
   id_admin:             number;
 }
 
 export interface DataUndanganView extends FormulirUndangan {
-  id_data_undangan: number; // alias for UI compatibility
+  id_data_undangan: string; // alias for UI compatibility
   admin_username:   string;
   deleted_at:       string | null;
 }

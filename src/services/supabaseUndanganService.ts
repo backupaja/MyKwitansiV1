@@ -8,7 +8,7 @@ export const supabaseUndanganService: UndanganService = {
       .from("vw_undangan")
       .select("*")
       .is("deleted_at", null)
-      .order("id_formulir_undangan", { ascending: false });
+      .order("tanggal_input", { ascending: false });
 
     if (error) {
       console.error("[Supabase UndanganService] getAll error:", error);
@@ -18,7 +18,7 @@ export const supabaseUndanganService: UndanganService = {
     return data as DataUndanganView[];
   },
 
-  async getById(id: number) {
+  async getById(id: string) {
     const { data, error } = await supabase
       .from("vw_undangan")
       .select("*")
@@ -39,17 +39,19 @@ export const supabaseUndanganService: UndanganService = {
       id_admin: adminId,
       acara: input.acara,
       penyelenggara: input.penyelenggara,
-      tanggal_acara: input.tanggal_acara,
-      waktu: input.waktu,
-      tempat: input.tempat,
-      agenda: input.agenda,
-      peserta: input.peserta,
-      dokumen_pendukung: input.dokumen_pendukung,
-      hasil_pertemuan: input.hasil_pertemuan,
-      tembusan: input.tembusan,
-      tempat_tanggal_surat: input.tempat_tanggal_surat,
-      nama_ttd: input.nama_ttd,
-      jabatan_ttd: input.jabatan_ttd,
+      tanggal_acara: input.tanggal_acara || null,
+      waktu_mulai: input.waktu_mulai || null,
+      waktu_selesai: input.waktu_selesai || null,
+      tempat_acara: input.tempat_acara,
+      agenda: input.agenda || null,
+      peserta: input.peserta || null,
+      dokumen_pendukung: input.dokumen_pendukung || null,
+      hasil_pertemuan: input.hasil_pertemuan || null,
+      tembusan: input.tembusan || null,
+      tempat_surat: input.tempat_surat || null,
+      tanggal_surat: input.tanggal_surat || null,
+      nama_ttd: input.nama_ttd || null,
+      jabatan_ttd: input.jabatan_ttd || null,
     };
 
     const { data, error } = await supabase
@@ -73,22 +75,24 @@ export const supabaseUndanganService: UndanganService = {
     };
   },
 
-  async update(id: number, input: CreateFormulirUndanganInput, adminId: number) {
+  async update(id: string, input: CreateFormulirUndanganInput, adminId: number) {
     const payload = {
       id_admin: adminId,
       acara: input.acara,
       penyelenggara: input.penyelenggara,
-      tanggal_acara: input.tanggal_acara,
-      waktu: input.waktu,
-      tempat: input.tempat,
-      agenda: input.agenda,
-      peserta: input.peserta,
-      dokumen_pendukung: input.dokumen_pendukung,
-      hasil_pertemuan: input.hasil_pertemuan,
-      tembusan: input.tembusan,
-      tempat_tanggal_surat: input.tempat_tanggal_surat,
-      nama_ttd: input.nama_ttd,
-      jabatan_ttd: input.jabatan_ttd,
+      tanggal_acara: input.tanggal_acara || null,
+      waktu_mulai: input.waktu_mulai || null,
+      waktu_selesai: input.waktu_selesai || null,
+      tempat_acara: input.tempat_acara,
+      agenda: input.agenda || null,
+      peserta: input.peserta || null,
+      dokumen_pendukung: input.dokumen_pendukung || null,
+      hasil_pertemuan: input.hasil_pertemuan || null,
+      tembusan: input.tembusan || null,
+      tempat_surat: input.tempat_surat || null,
+      tanggal_surat: input.tanggal_surat || null,
+      nama_ttd: input.nama_ttd || null,
+      jabatan_ttd: input.jabatan_ttd || null,
     };
 
     const { data, error } = await supabase
@@ -113,7 +117,7 @@ export const supabaseUndanganService: UndanganService = {
     };
   },
 
-  async delete(id: number) {
+  async delete(id: string) {
     const { error } = await supabase
       .from("formulir_undangan")
       .update({ deleted_at: new Date().toISOString() })
@@ -130,7 +134,7 @@ export const supabaseUndanganService: UndanganService = {
       .from("vw_undangan")
       .select("*")
       .is("deleted_at", null)
-      .or(`acara.ilike.%${query}%,tempat.ilike.%${query}%,admin_username.ilike.%${query}%`)
+      .or(`acara.ilike.%${query}%,tempat_acara.ilike.%${query}%,admin_username.ilike.%${query}%`)
       .order("id_formulir_undangan", { ascending: false });
 
     if (error) {
@@ -156,7 +160,7 @@ export const supabaseUndanganService: UndanganService = {
     return data as DataUndanganView[];
   },
 
-  async restore(id: number) {
+  async restore(id: string) {
     const { error } = await supabase
       .from("formulir_undangan")
       .update({ deleted_at: null })
@@ -168,7 +172,7 @@ export const supabaseUndanganService: UndanganService = {
     }
   },
 
-  async hardDelete(id: number) {
+  async hardDelete(id: string) {
     const { error } = await supabase
       .from("formulir_undangan")
       .delete()

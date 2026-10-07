@@ -19,6 +19,8 @@ export interface PdfService {
   printMultipleNotaPdf(items: DataNotaView[]): Promise<void>;
   downloadUndanganPdf(data: import("../types").DataUndanganView): Promise<void>;
   printUndanganPdf(data: import("../types").DataUndanganView): Promise<void>;
+  downloadMultipleUndanganPdf(items: import("../types").DataUndanganView[]): Promise<void>;
+  printMultipleUndanganPdf(items: import("../types").DataUndanganView[]): Promise<void>;
 }
 
 /** Sanitize string for use in Windows/Linux filenames */
@@ -299,6 +301,37 @@ export const pdfService: PdfService = {
       triggerPrint(blob);
     } catch (e) {
       console.error("Print PDF error:", e);
+      alert("Gagal memproses PDF untuk diprint.");
+    }
+  },
+
+  async downloadMultipleUndanganPdf(items: import("../types").DataUndanganView[]) {
+    if (items.length === 0) return;
+    if (items.length === 1) return this.downloadUndanganPdf(items[0]);
+    try {
+      const { pdf } = await import("@react-pdf/renderer");
+      const { MultiUndanganDocument } = await import("../documents/UndanganDocument");
+      // @ts-ignore
+      const blob = await pdf(<MultiUndanganDocument items={items} />).toBlob();
+      const filename = `Batch_Undangan_${items.length}_items.pdf`;
+      triggerDownload(blob, filename);
+    } catch (e) {
+      console.error("[PdfService] Bulk undangan download error:", e);
+      alert("Gagal membuat PDF Undangan.");
+    }
+  },
+
+  async printMultipleUndanganPdf(items: import("../types").DataUndanganView[]) {
+    if (items.length === 0) return;
+    if (items.length === 1) return this.printUndanganPdf(items[0]);
+    try {
+      const { pdf } = await import("@react-pdf/renderer");
+      const { MultiUndanganDocument } = await import("../documents/UndanganDocument");
+      // @ts-ignore
+      const blob = await pdf(<MultiUndanganDocument items={items} />).toBlob();
+      triggerPrint(blob);
+    } catch (e) {
+      console.error("[PdfService] Bulk undangan print error:", e);
       alert("Gagal memproses PDF untuk diprint.");
     }
   }

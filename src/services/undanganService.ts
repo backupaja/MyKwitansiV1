@@ -5,21 +5,20 @@ const ADMIN_NAMES: Record<number, string> = { 1: "Bang Karir", 2: "Bang Tensi" }
 
 export interface UndanganService {
   getAll(): Promise<DataUndanganView[]>;
-  getById(id: number): Promise<DataUndanganView | undefined>;
+  getById(id: string): Promise<DataUndanganView | undefined>;
   create(input: CreateFormulirUndanganInput, adminId: number): Promise<DataUndanganView>;
-  update(id: number, input: CreateFormulirUndanganInput, adminId: number): Promise<DataUndanganView>;
-  delete(id: number): Promise<void>;
+  update(id: string, input: CreateFormulirUndanganInput, adminId: number): Promise<DataUndanganView>;
+  delete(id: string): Promise<void>;
   search(query: string): Promise<DataUndanganView[]>;
   getDeleted(): Promise<DataUndanganView[]>;
-  restore(id: number): Promise<void>;
-  hardDelete(id: number): Promise<void>;
+  restore(id: string): Promise<void>;
+  hardDelete(id: string): Promise<void>;
 }
 
 const _store: DataUndanganView[] = [...MOCK_UNDANGAN];
 
-function nextId(): number {
-  if (_store.length === 0) return 1;
-  return Math.max(..._store.map((r) => r.id_formulir_undangan)) + 1;
+function nextId(): string {
+  return crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
 }
 
 export const undanganService: UndanganService = {
@@ -40,14 +39,16 @@ export const undanganService: UndanganService = {
       acara:                 input.acara,
       penyelenggara:         input.penyelenggara,
       tanggal_acara:         input.tanggal_acara,
-      waktu:                 input.waktu,
-      tempat:                input.tempat,
+      waktu_mulai:           input.waktu_mulai,
+      waktu_selesai:         input.waktu_selesai,
+      tempat_acara:          input.tempat_acara,
       agenda:                input.agenda,
       peserta:               input.peserta,
       dokumen_pendukung:     input.dokumen_pendukung,
       hasil_pertemuan:       input.hasil_pertemuan,
       tembusan:              input.tembusan,
-      tempat_tanggal_surat:  input.tempat_tanggal_surat,
+      tempat_surat:          input.tempat_surat,
+      tanggal_surat:         input.tanggal_surat,
       nama_ttd:              input.nama_ttd,
       jabatan_ttd:           input.jabatan_ttd,
       tanggal_input:         new Date().toISOString(),
@@ -82,7 +83,7 @@ export const undanganService: UndanganService = {
     const q = query.toLowerCase();
     return _store.filter((t) => {
       if (t.deleted_at) return false;
-      return [t.admin_username, t.acara, t.tempat].some((v) =>
+      return [t.admin_username, t.acara, t.tempat_acara].some((v) =>
         v.toLowerCase().includes(q)
       );
     });
