@@ -1,4 +1,4 @@
-﻿import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import type { DataTransaksiView } from "../types";
 import { formatRp, terbilang, CURRENT_YEAR, formatDocumentNumber, formatDateNoDay } from "../utils/formatters";
 
@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   receiptContainer: {
-    height: 310,
+    height: 335,
     paddingHorizontal: 28,
     paddingVertical: 22,
     borderBottomWidth: 1,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#374151",
   },
   signatureSpace: {
-    height: 40,
+    height: 65,
   },
   signatureName: {
     fontSize: 10,
