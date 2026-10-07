@@ -121,7 +121,9 @@ export default function UndanganPage() {
 
   const handleFormSubmit = async () => {
     if (!formData.acara || !formData.tanggal_acara) {
-      setFormError("Kolom Acara dan Tanggal Acara wajib diisi.");
+      const msg = "Kolom Acara dan Tanggal Acara wajib diisi!";
+      setFormError(msg);
+      alert(msg);
       return;
     }
     
