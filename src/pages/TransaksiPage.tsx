@@ -446,7 +446,6 @@ export function TransaksiPage({ onToast }: TransaksiPageProps) {
               {/* Rows */}
               <div className="space-y-3">
                 {[
-                  { label: "No Kwitansi",      value: formatDocumentNumber(viewTarget.id_data_transaksi), bold: true },
                   { label: "Diterima Dari",    value: viewTarget.terima_dari,                             bold: false },
                   { label: "Terbilang",        value: terbilang(viewTarget.jumlah_uang) + " Rupiah",      bold: true },
                   { label: "Untuk Pembayaran", value: viewTarget.untuk_pembayaran,                        bold: false },
