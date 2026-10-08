@@ -161,7 +161,7 @@ function KwitansiBlock({ data }: Props) {
       <View style={styles.row}>
         <Text style={styles.label}>No Kwitansi</Text>
         <View style={styles.valueBox}>
-          <Text style={styles.noKwitansi}>{formatDocumentNumber(data.id_data_transaksi)}</Text>
+          <Text style={styles.noKwitansi}> </Text>
         </View>
       </View>
       <View style={styles.row}>
