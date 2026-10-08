@@ -188,7 +188,7 @@ function KwitansiBlock({ data }: Props) {
           <Text style={styles.amountValue}>{formatRp(data.jumlah_uang).replace("Rp ", "")}</Text>
         </View>
         <View style={styles.signatureBox}>
-          <Text style={styles.signatureDate}>{data.kota} , {formatDateNoDay(data.tanggal_transaksi)}</Text>
+          <Text style={styles.signatureDate}>{data.kota}, {formatDateNoDay(data.tanggal_transaksi)}</Text>
           <View style={styles.signatureLineTop} />
           {data.jumlah_uang >= MATERAI_THRESHOLD ? (
             <View style={styles.materaiWrapper}>
